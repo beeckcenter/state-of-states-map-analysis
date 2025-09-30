@@ -1,0 +1,580 @@
+---
+title: State of the States map analysis
+author:
+  - name: Elham Ali
+    corresponding: true
+    roles:
+      - Researcher
+      - Data Storytelling
+      - Human-centered Design
+      - Data Visualization
+    affiliations:
+      - Beeck Center for Social Impact and Innovation at Georgetown University
+license: CC BY-SA 4.0
+keywords:
+  - civic tech
+  - digital transformation
+  - state government
+  - map
+  - research
+date: last-modified
+abstract: |
+  This analysis aims to explore trends of digital transformation, specifically on policy, chief data officers, digital service teams, impact reports, and design systems across U.S. states and territories.
+keypoints:
+  - civic tech
+  - digital transformation
+  - state government
+  - map
+  - research
+citation:
+  container-title: Beeck Center for Social Impact and Innovation
+draft: false
+bibliography: references.bib
+code-fold: true
+# reference-location: margin
+# citation-location: margin
+echo: true
+warning: false
+---
+
+## Background
+
+When public climate & EJ evidence disappears (removed, restricted, or altered), a decade of downstream knowledge becomes harder to verify, reproduce, teach, or apply—especially for communities and decisions that most need it.\
+This analysis looks at how many studies have used these tools, their topics, and their use cases.
+
+## Questions
+
+Here are the key questions explored in this analysis:
+
+-   How many **states/territories** have at least one:
+
+    -   Executive order
+    -   AI Legislation
+    -   Chief Data Officer (CDO)
+    -   Digital Service Team (DST)
+    -   Digital Service Impact Report
+    -   Design system
+
+-   What is the **distribution of digital transformation activities** by state/territory? (e.g., number of EOs per state)
+
+-   Which states are the **most active vs. least active** across all categories?
+
+-   Which states introduced CDOs or DSTs earliest, and how has that spread across regions?
+
+-   Which states with **active CDOs** also have **design systems** or **DSTs**?
+
+-   Are states with AI legislation more likely to have other forms of digital infrastructure (DST, design systems)?
+
+-   What are the **most common policy topics** in executive orders (e.g., broadband, interoperability, AI)?
+
+-   What are the **most common policy topics** in AI legislations orders (e.g., broadband, interoperability, AI)?
+
+-   What is the **trend over time** in the number of executive orders and AI legislations enacted?
+
+-   Do **early adopters** (states with policies from 2010–2015) differ from late adopters in 2020–2025?
+
+-   Do states with **higher numbers of executive orders** also pass more legislations or rules?
+
+-   Do states with **impact reports** show evidence of greater adoption of other digital practices?
+
+-   Other ideas: Heatmaps of activity types by state, regional comparisons (Northeast vs. South vs. West), and timelines of adoption by year (EOs, bills, rules).
+
+## Data Sources
+
+The climate tools assessed are:
+
+-   map_data
+-   policy_data
+
+The data for this project comes from the Digital Service Network at the Beeck and last refreshed on September 30, 2025.
+
+Original raw datasets are saved in the `data/` folder. This script reduces and cleans those datasets to prepare them for analysis.
+
+------------------------------------------------------------------------
+
+## Cleaning
+
+I start by loading the packages needed for file handling, data wrangling, and visualization.
+
+```{r}
+#| label: load-libraries
+
+## Folder structure helpers
+library(here)
+library(ezknitr)
+
+## Data import & cleaning
+library(tidyverse)  
+library(janitor)
+library(lubridate)
+library(janitor)
+# library(rlang)
+
+## Visualization
+library(highcharter)
+library(igraph)
+library(RColorBrewer)
+library(htmlwidgets)
+library(gt)
+```
+
+### Import raw data
+
+I import all .csv files from the `data/` folder, then save them as .rds files into `output/`. This preserves their structure and speeds up future reads.
+
+```{r}
+#| label: import-data
+
+# List all CSV files
+csv_files <- list.files(here("data"), pattern = "\\.csv$", full.names = TRUE)
+
+# Read into a list of dataframes
+datasets <- map(csv_files, read.csv)
+names(datasets) <- tools::file_path_sans_ext(basename(csv_files))
+
+# Save each dataset as .rds in output/
+walk2(
+  datasets,
+  names(datasets),
+  ~ saveRDS(.x, here("output", paste0(.y, ".rds")))
+)
+```
+
+### Clean both datasets
+
+I apply the same cleaning process to both datasets (map_data and policy_data):
+
+-   Standardize variable names to snake_case
+-   Guess variable types (integers, doubles, dates, etc.)
+-   Convert responses for 'executive_orders', 'ai_legislations', 'digital_service_teams', 'digital_service_impact_reports'
+    -   yes to 1
+    -   no to 0
+-   Convert responses for 'design_systems'
+    -   yes to 1
+    -   in development to 1
+    -   no to 0
+    -   unverified to 0
+-   Convert responses for 'chief_data_officers'
+    -   yes, state CDO to 1
+    -   yes, state CDO equivalent to 1
+    -   no to 0
+    -   no, vacant to 0
+    -   unverified to 0
+-   Add a region variable to classify the state's based on CDC's four regions [^1]
+    -   **Northeast**: Includes Connecticut, Maine, Massachusetts, New Hampshire, New Jersey, New York, Pennsylvania, Rhode Island, and Vermont
+    -   **Midwest**: Includes Illinois, Indiana, Iowa, Kansas, Michigan, Minnesota, Missouri, Nebraska, North Dakota, Ohio, South Dakota, and Wisconsin
+    -   **South**: Includes Alabama, Arkansas, Delaware, District of Columbia, Florida, Georgia, Kentucky, Louisiana, Maryland, Mississippi, North Carolina, Oklahoma, South Carolina, Tennessee, Texas, Virginia, and West Virginia
+    -   **West**: Includes Alaska, Arizona, California, Colorado, Hawaii, Idaho, Montana, Nevada, New Mexico, Oregon, Utah, Washington, and Wyoming.
+    -   **Territories**: Includes American Samoa, Guam, the Northern Mariana Islands, Puerto Rico, and the U.S. Virgin Islands (not included in CDC's regional mapping, but I added here to include the territories)
+
+[^1]: <https://www.cdc.gov/nchs/hus/sources-definitions/geographic-region.htm>
+
+```{r echo=TRUE, message=FALSE, results='markup'}
+#| label: clean-datasets
+
+# -------------------------------------------------------------------
+# Libraries
+library(here)
+library(tidyverse)   # includes dplyr, stringr, readr, etc.
+library(janitor)
+library(lubridate)
+library(forcats)
+library(glue)
+library(fs)
+
+# -------------------------------------------------------------------
+# Helper: read -> clean names -> guess types -> trim
+read_clean_tag <- function(path) {
+  readRDS(path) |>
+    janitor::clean_names() |>
+    readr::type_convert(col_types = readr::cols(.default = readr::col_guess())) |>
+    dplyr::mutate(across(where(is.character), ~ trimws(.x)))
+}
+
+# Core base cleaner (shared)
+clean_base <- function(df) {
+  df |>
+    janitor::clean_names() |>
+    readr::type_convert(col_types = readr::cols(.default = readr::col_guess())) |>
+    dplyr::mutate(across(where(is.character), ~ trimws(.x)))
+}
+
+# -------------------------------------------------------------------
+# Region mapping (CDC 4 regions + Territories) with robust normalization
+add_region <- function(df, state_col = "state_territory") {
+  norm <- function(x) {
+    x |>
+      stringr::str_to_lower() |>
+      stringr::str_replace_all("[[:punct:]]", " ") |>
+      stringr::str_squish()
+  }
+
+  northeast <- norm(c(
+    "Connecticut","Maine","Massachusetts","New Hampshire","New Jersey",
+    "New York","Pennsylvania","Rhode Island","Vermont"
+  ))
+  midwest <- norm(c(
+    "Illinois","Indiana","Iowa","Kansas","Michigan","Minnesota","Missouri",
+    "Nebraska","North Dakota","Ohio","South Dakota","Wisconsin"
+  ))
+  south <- norm(c(
+    "Alabama","Arkansas","Delaware","District of Columbia","Florida","Georgia",
+    "Kentucky","Louisiana","Maryland","Mississippi","North Carolina","Oklahoma",
+    "South Carolina","Tennessee","Texas","Virginia","West Virginia"
+  ))
+  # DC aliases
+  south <- unique(c(south, norm(c("Washington, D.C.","Washington D.C.","Washington DC","DC"))))
+
+  west <- norm(c(
+    "Alaska","Arizona","California","Colorado","Hawaii","Idaho","Montana","Nevada",
+    "New Mexico","Oregon","Utah","Washington","Wyoming"
+  ))
+  territories <- norm(c(
+    "American Samoa","Guam","Northern Mariana Islands","Puerto Rico",
+    "U.S. Virgin Islands","US Virgin Islands","Virgin Islands"
+  ))
+
+  # Choose the state column (fallback to 'state' if needed)
+  chosen_col <-
+    if (state_col %in% names(df)) state_col
+    else if ("state" %in% names(df)) "state"
+    else if ("state_territory" %in% names(df)) "state_territory"
+    else NA_character_
+
+  if (is.na(chosen_col)) return(df)
+
+  df |>
+    dplyr::mutate(
+      .key = norm(.data[[chosen_col]]),
+      region = dplyr::case_when(
+        .key %in% northeast   ~ "Northeast",
+        .key %in% midwest     ~ "Midwest",
+        .key %in% south       ~ "South",
+        .key %in% west        ~ "West",
+        .key %in% territories ~ "Territories",
+        TRUE ~ NA_character_
+      )
+    ) |>
+    dplyr::select(-.key)
+}
+
+# -------------------------------------------------------------------
+# Exact recoding rules for specified columns
+
+# yes/no -> 1/0
+recode_yes_no <- function(x) {
+  xx <- stringr::str_to_lower(stringr::str_squish(as.character(x)))
+  dplyr::case_when(
+    xx == "yes" ~ 1L,
+    xx == "no"  ~ 0L,
+    TRUE        ~ NA_integer_
+  )
+}
+
+# design_systems: yes/in development -> 1; no/unverified -> 0
+recode_design_systems <- function(x) {
+  xx <- stringr::str_to_lower(stringr::str_squish(as.character(x)))
+  dplyr::case_when(
+    xx %in% c("yes","in development","in-development","in_development") ~ 1L,
+    xx %in% c("no","unverified") ~ 0L,
+    TRUE ~ NA_integer_
+  )
+}
+
+# chief_data_officers (CDO):
+# yes, state CDO / yes, state CDO equivalent -> 1
+# no / no, vacant / unverified -> 0
+recode_cdo <- function(x) {
+  xx <- stringr::str_to_lower(stringr::str_squish(as.character(x)))
+  dplyr::case_when(
+    xx %in% c("yes, state cdo","yes, state cdo equivalent") ~ 1L,
+    xx %in% c("no","no, vacant","unverified") ~ 0L,
+    TRUE ~ NA_integer_
+  )
+}
+
+# Apply recoding only to the specified columns if they exist
+recode_specified_status_cols <- function(df) {
+  df |>
+    dplyr::mutate(
+      dplyr::across(
+        intersect(c("executive_orders", "ai_legislations",
+                    "digital_service_teams", "digital_service_impact_reports"),
+                  names(df)),
+        recode_yes_no
+      ),
+      dplyr::across(
+        intersect("design_systems", names(df)),
+        recode_design_systems
+      ),
+      dplyr::across(
+        intersect("chief_data_officers", names(df)),
+        recode_cdo
+      )
+    )
+}
+
+# -------------------------------------------------------------------
+# One canonical cleaner to use everywhere
+clean_dataset <- function(df) {
+  df |>
+    clean_base() |>
+    recode_specified_status_cols() |>
+    add_region()
+}
+
+# -------------------------------------------------------------------
+# Read raw RDS (from your earlier import step), clean, write outputs
+map_raw    <- read_clean_tag(here("output", "map_data.rds"))
+policy_raw <- read_clean_tag(here("output", "policy_data.rds"))
+
+map_clean    <- clean_dataset(map_raw)
+policy_clean <- clean_dataset(policy_raw)
+
+fs::dir_create(here("output"))
+readr::write_rds(map_clean,    here("output", "map_data_clean.rds"))
+readr::write_rds(policy_clean, here("output", "policy_data_clean.rds"))
+readr::write_csv(map_clean,    here("output", "map_data_clean.csv"), na = "")
+readr::write_csv(policy_clean, here("output", "policy_data_clean.csv"), na = "")
+```
+
+I'll now assign the right variable types for the cleaned datasets.
+
+```{r}
+#| label: assign-variables
+
+library(dplyr)
+library(stringr)
+library(readr)
+library(forcats)
+
+# load inputs created earlier
+map_data_clean    <- readr::read_rds(here("output", "map_data_clean.rds"))
+policy_data_clean <- readr::read_rds(here("output", "policy_data_clean.rds"))
+
+to_binary <- function(x) {
+  if (is.logical(x)) return(as.integer(x))
+  if (is.numeric(x)) return(as.integer(x == 1))
+  x_chr <- tolower(trimws(as.character(x)))
+  x_chr[x_chr == ""] <- NA
+  yes_vals <- c("yes","y","true","t","1","present","has","active","in development")
+  no_vals  <- c("no","n","false","f","0","absent","none","inactive","unverified","no, vacant")
+  as.integer(dplyr::case_when(
+    x_chr %in% yes_vals ~ 1L,
+    x_chr %in% no_vals  ~ 0L,
+    TRUE ~ NA_integer_
+  ))
+}
+
+to_region_factor <- function(x) {
+  # map region labels to codes 1..5
+  ref <- c("Northeast","Midwest","South","West","Territories")
+  idx <- match(as.character(x), ref)          # NA if label not in ref
+  factor(as.character(idx), levels = as.character(seq_along(ref)), ordered = TRUE)
+}
+
+# ---------- map_data_clean ----------
+map_int_cols <- c(
+  "total_number_of_executive_orders",
+  "total_number_of_legislation",
+  "total_number_of_administrative_rules",
+  "publication_year"
+)
+map_dbl_cols <- c("cdo_year_established")
+map_bin_cols <- c(
+  "executive_orders","ai_legislations","administrative_rules",
+  "digital_service_teams","digital_service_impact_reports",
+  "chief_data_officers","design_systems","design_system_open_source_status"
+)
+map_cat_cols <- c("bill_status")
+
+map_data_clean <- map_data_clean %>%
+  mutate(across(everything(), ~ as.character(.))) %>%
+  mutate(
+    across(any_of(map_int_cols), ~ suppressWarnings(as.integer(readr::parse_number(.)))),
+    across(any_of(map_dbl_cols), ~ suppressWarnings(as.double(readr::parse_number(.)))),
+    across(any_of(map_bin_cols), to_binary),
+    across(any_of(map_cat_cols), ~ forcats::as_factor(trimws(.))),
+    region = to_region_factor(region)
+  )
+
+# ---------- policy_data_clean ----------
+pol_int_cols <- c("executive_order_year_enacted", "legislative_session")
+pol_cat_cols <- c("scan_type", "bill_status")
+
+policy_data_clean <- policy_data_clean %>%
+  mutate(across(everything(), ~ as.character(.))) %>%
+  mutate(
+    across(any_of(pol_int_cols), ~ suppressWarnings(as.integer(readr::parse_number(.)))),
+    across(any_of(pol_cat_cols), ~ forcats::as_factor(trimws(.))),
+    region = to_region_factor(region)
+  )
+```
+
+## Analysis
+
+I will look at each question one by one and clean the data as I go. I will organize the data during the analysis before exploring the results. I'll also export intermediate results into tidy CSV files so they are ready for further visualization and exploration.
+
+-   How many **states/territories** have at least one:
+
+    -   Executive order
+    -   AI Legislation
+    -   Chief Data Officer (CDO)
+    -   Digital Service Team (DST)
+    -   Digital Service Impact Report
+    -   Design system
+
+```{r}
+#| label: research-question-1
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
+
+
+# Packages
+library(tidyverse)
+library(highcharter)
+library(htmlwidgets)
+library(webshot2)
+library(glue)
+library(scales)
+
+# Indicators to analyze
+indicators <- c(
+  executive_orders                = "Executive order",
+  ai_legislations                = "AI legislation",
+  chief_data_officers            = "Chief Data Officer (CDO)",
+  digital_service_teams          = "Digital Service Team (DST)",
+  digital_service_impact_reports = "Digital Service Impact Report",
+  design_systems                 = "Design system"
+)
+
+# Prep: unique states; turn binary fields into logical presence
+# Works whether columns are 0/1 integers or TRUE/FALSE logicals
+map_prepped <- map_data_clean %>%
+  distinct(state_territory, .keep_all = TRUE) %>%
+  mutate(
+    across(
+      any_of(names(indicators)),
+      ~ dplyr::coalesce(. == 1L, FALSE)  # TRUE if value == 1; NA -> FALSE
+    )
+  )
+
+n_states <- nrow(map_prepped)
+
+# Summaries
+counts_tbl <- map_prepped %>%
+  select(any_of(names(indicators))) %>%
+  pivot_longer(everything(), names_to = "indicator", values_to = "has_it") %>%
+  group_by(indicator) %>%
+  summarise(
+    count   = sum(has_it, na.rm = TRUE),
+    percent = 100 * count / n_states,
+    .groups = "drop"
+  ) %>%
+  mutate(label = recode(indicator, !!!indicators))
+
+# Ordered statements
+order_vec <- c(
+  "executive_orders",
+  "ai_legislations",
+  "chief_data_officers",
+  "design_systems",
+  "digital_service_teams",
+  "digital_service_impact_reports"
+)
+
+insights <- counts_tbl %>%
+  filter(indicator %in% order_vec) %>%
+  mutate(
+    statement = case_when(
+      indicator == "executive_orders" ~ glue("{number(percent, accuracy = 0.1)}% U.S. states/territories have an executive order."),
+      indicator == "ai_legislations" ~ glue("{number(percent, accuracy = 0.1)}% U.S. states/territories have AI legislation."),
+      indicator == "chief_data_officers" ~ glue("{number(percent, accuracy = 0.1)}% U.S. states/territories have a chief data office (CDO)."),
+      indicator == "design_systems" ~ glue("{number(percent, accuracy = 0.1)}% U.S. states/territories have a design system."),
+      indicator == "digital_service_teams" ~ glue("{number(percent, accuracy = 0.1)}% U.S. states/territories have a digital service team (DST)."),
+      indicator == "digital_service_impact_reports" ~ glue("{number(percent, accuracy = 0.1)}% U.S. states/territories have a digital service impact report.")
+    )
+  ) %>%
+  select(indicator, label, count, percent, statement) %>%
+  mutate(percent = round(percent, 1)) %>%
+  arrange(match(indicator, order_vec))
+
+# Save insights
+readr::write_csv(insights, here("output", "insights.csv"))
+
+# Chart
+counts_for_chart <- counts_tbl %>% arrange(desc(count))
+
+hc <- highchart() %>%
+  hc_chart(type = "column") %>%
+  hc_title(text = "States/Territories with at least one item") %>%
+  hc_subtitle(text = paste0("n = ", n_states, " states/territories")) %>%
+  hc_xAxis(categories = counts_for_chart$label, title = list(text = NULL)) %>%
+  hc_yAxis(title = list(text = "Count"), allowDecimals = FALSE, min = 0,
+           max = max(counts_for_chart$count)) %>%
+  hc_series(
+    list(
+      name = "Count",
+      data = counts_for_chart$count,
+      dataLabels = list(enabled = TRUE),
+      tooltip = list(pointFormat = paste0("<b>{point.y}</b> of ", n_states))
+    )
+  ) %>%
+  hc_plotOptions(column = list(borderRadius = 3, pointPadding = 0.05, groupPadding = 0.1)) %>%
+  hc_exporting(enabled = TRUE)
+
+saveWidget(hc, file = here("output", "q1.html"), selfcontained = TRUE)
+webshot2::webshot(here("output", "q1.html"), file = here("output", "q1.png"),
+                  vwidth = 900, vheight = 600)
+
+insights$statement
+```
+
+-   Which **regions** have the most vs least:
+
+    -   Executive order
+
+    -   AI Legislations
+
+    -   Chief Data Officers (CDO)
+
+    -   Digital Service Teams (DST)
+
+    -   Digital Service Impact Reports
+
+    -   Design systems
+
+```{r}
+
+```
+
+-   What is the **distribution of digital transformation activities** by state/territory? (e.g., number of EOs per state)
+
+```{r}
+
+```
+
+-   Which states are the **most active vs. least active** across all categories?
+
+-   Which states introduced CDOs or DSTs earliest, and how has that spread across regions?
+
+-   Which states with **active CDOs** also have **design systems** or **DSTs**?
+
+-   Are states with AI legislation more likely to have other forms of digital infrastructure (DST, design systems)?
+
+-   What are the **most common policy topics** in executive orders (e.g., broadband, interoperability, AI)?
+
+-   What are the **most common policy topics** in AI legislations orders (e.g., broadband, interoperability, AI)?
+
+-   What is the **trend over time** in the number of executive orders and AI legislations enacted?
+
+-   Do **early adopters** (states with policies from 2010–2015) differ from late adopters in 2020–2025?
+
+-   Do states with **higher numbers of executive orders** also pass more legislations or rules?
+
+-   Do states with **impact reports** show evidence of greater adoption of other digital practices?
+
+-   Other ideas: Heatmaps of activity types by state, regional comparisons (Northeast vs. South vs. West), and timelines of adoption by year (EOs, bills, rules).
