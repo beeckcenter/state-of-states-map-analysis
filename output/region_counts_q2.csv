@@ -1,0 +1,31 @@
+region,indicator,count,label
+Northeast,ai_legislations,7,AI legislation
+Midwest,ai_legislations,6,AI legislation
+South,ai_legislations,10,AI legislation
+West,ai_legislations,7,AI legislation
+Territories,ai_legislations,1,AI legislation
+Northeast,chief_data_officers,6,Chief Data Officer (CDO)
+Midwest,chief_data_officers,7,Chief Data Officer (CDO)
+South,chief_data_officers,8,Chief Data Officer (CDO)
+West,chief_data_officers,8,Chief Data Officer (CDO)
+Territories,chief_data_officers,0,Chief Data Officer (CDO)
+Northeast,design_systems,6,Design system
+Midwest,design_systems,4,Design system
+South,design_systems,6,Design system
+West,design_systems,3,Design system
+Territories,design_systems,0,Design system
+Northeast,digital_service_impact_reports,3,Digital Service Impact Report
+Midwest,digital_service_impact_reports,1,Digital Service Impact Report
+South,digital_service_impact_reports,1,Digital Service Impact Report
+West,digital_service_impact_reports,2,Digital Service Impact Report
+Territories,digital_service_impact_reports,0,Digital Service Impact Report
+Northeast,digital_service_teams,7,Digital Service Team (DST)
+Midwest,digital_service_teams,1,Digital Service Team (DST)
+South,digital_service_teams,3,Digital Service Team (DST)
+West,digital_service_teams,3,Digital Service Team (DST)
+Territories,digital_service_teams,0,Digital Service Team (DST)
+Northeast,executive_orders,8,Executive order
+Midwest,executive_orders,9,Executive order
+South,executive_orders,15,Executive order
+West,executive_orders,12,Executive order
+Territories,executive_orders,3,Executive order

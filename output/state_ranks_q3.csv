@@ -1,0 +1,57 @@
+state_territory,executive_orders,ai_legislations,chief_data_officers,digital_service_teams,digital_service_impact_reports,design_systems,activity_score,categories_present,rank_desc,rank_asc
+California,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1,53
+Colorado,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1,53
+Massachusetts,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1,53
+New Jersey,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1,53
+Connecticut,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5,48
+Delaware,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5,48
+Maryland,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5,48
+North Carolina,1,1,1,1,1,0,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports",5,48
+Vermont,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5,48
+Michigan,1,1,1,0,0,1,4,"Executive orders, AI legislations, Chief Data Officers (CDO), Design systems",10,43
+Minnesota,1,1,0,1,1,0,4,"Executive orders, AI legislations, Digital Service Teams (DST), Digital Service Impact Reports",10,43
+New York,1,1,0,1,1,0,4,"Executive orders, AI legislations, Digital Service Teams (DST), Digital Service Impact Reports",10,43
+Ohio,1,1,1,0,0,1,4,"Executive orders, AI legislations, Chief Data Officers (CDO), Design systems",10,43
+Rhode Island,1,0,1,1,0,1,4,"Executive orders, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",10,43
+Arizona,0,1,1,1,0,0,3,"AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST)",15,31
+Florida,1,1,1,0,0,0,3,"Executive orders, AI legislations, Chief Data Officers (CDO)",15,31
+Georgia,1,1,0,0,0,1,3,"Executive orders, AI legislations, Design systems",15,31
+Hawaii,1,1,1,0,0,0,3,"Executive orders, AI legislations, Chief Data Officers (CDO)",15,31
+Illinois,1,1,0,0,0,1,3,"Executive orders, AI legislations, Design systems",15,31
+Indiana,1,1,1,0,0,0,3,"Executive orders, AI legislations, Chief Data Officers (CDO)",15,31
+North Dakota,1,1,1,0,0,0,3,"Executive orders, AI legislations, Chief Data Officers (CDO)",15,31
+Pennsylvania,1,0,0,1,0,1,3,"Executive orders, Digital Service Teams (DST), Design systems",15,31
+Texas,1,1,1,0,0,0,3,"Executive orders, AI legislations, Chief Data Officers (CDO)",15,31
+Utah,1,1,0,0,0,1,3,"Executive orders, AI legislations, Design systems",15,31
+Virginia,1,1,0,0,0,1,3,"Executive orders, AI legislations, Design systems",15,31
+Washington,1,1,1,0,0,0,3,"Executive orders, AI legislations, Chief Data Officers (CDO)",15,31
+Arkansas,0,1,1,0,0,0,2,"AI legislations, Chief Data Officers (CDO)",27,17
+District of Columbia,1,0,1,0,0,0,2,"Executive orders, Chief Data Officers (CDO)",27,17
+Idaho,1,1,0,0,0,0,2,"Executive orders, AI legislations",27,17
+Iowa,1,0,0,0,0,1,2,"Executive orders, Design systems",27,17
+Kansas,1,0,1,0,0,0,2,"Executive orders, Chief Data Officers (CDO)",27,17
+Louisiana,1,0,0,0,0,1,2,"Executive orders, Design systems",27,17
+Maine,0,1,1,0,0,0,2,"AI legislations, Chief Data Officers (CDO)",27,17
+Montana,1,0,1,0,0,0,2,"Executive orders, Chief Data Officers (CDO)",27,17
+Nevada,1,0,1,0,0,0,2,"Executive orders, Chief Data Officers (CDO)",27,17
+New Hampshire,1,1,0,0,0,0,2,"Executive orders, AI legislations",27,17
+Oklahoma,1,0,0,0,0,1,2,"Executive orders, Design systems",27,17
+Tennessee,0,1,1,0,0,0,2,"AI legislations, Chief Data Officers (CDO)",27,17
+West Virginia,1,1,0,0,0,0,2,"Executive orders, AI legislations",27,17
+Wyoming,1,0,1,0,0,0,2,"Executive orders, Chief Data Officers (CDO)",27,17
+Alabama,1,0,0,0,0,0,1,Executive orders,41,3
+Alaska,1,0,0,0,0,0,1,Executive orders,41,3
+American Samoa,1,0,0,0,0,0,1,Executive orders,41,3
+Guam,1,0,0,0,0,0,1,Executive orders,41,3
+Kentucky,1,0,0,0,0,0,1,Executive orders,41,3
+Mississippi,1,0,0,0,0,0,1,Executive orders,41,3
+Missouri,0,0,1,0,0,0,1,Chief Data Officers (CDO),41,3
+Nebraska,0,0,1,0,0,0,1,Chief Data Officers (CDO),41,3
+New Mexico,1,0,0,0,0,0,1,Executive orders,41,3
+Northern Mariana Islands,1,0,0,0,0,0,1,Executive orders,41,3
+Oregon,1,0,0,0,0,0,1,Executive orders,41,3
+South Carolina,1,0,0,0,0,0,1,Executive orders,41,3
+U.S. Virgin Islands,0,1,0,0,0,0,1,AI legislations,41,3
+Wisconsin,1,0,0,0,0,0,1,Executive orders,41,3
+Puerto Rico,0,0,0,0,0,0,0,None,55,1
+South Dakota,0,0,0,0,0,0,0,None,55,1

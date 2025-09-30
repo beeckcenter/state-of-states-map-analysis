@@ -1,0 +1,30 @@
+state_territory,chief_data_officers,design_systems,digital_service_teams,has_design_system,has_dst,summary
+Arizona,1,0,1,FALSE,TRUE,Has DST only
+Arkansas,1,0,0,FALSE,FALSE,No design system or DST
+California,1,1,1,TRUE,TRUE,Has both design system and DST
+Colorado,1,1,1,TRUE,TRUE,Has both design system and DST
+Connecticut,1,1,1,TRUE,TRUE,Has both design system and DST
+Delaware,1,1,1,TRUE,TRUE,Has both design system and DST
+District of Columbia,1,0,0,FALSE,FALSE,No design system or DST
+Florida,1,0,0,FALSE,FALSE,No design system or DST
+Hawaii,1,0,0,FALSE,FALSE,No design system or DST
+Indiana,1,0,0,FALSE,FALSE,No design system or DST
+Kansas,1,0,0,FALSE,FALSE,No design system or DST
+Maine,1,0,0,FALSE,FALSE,No design system or DST
+Maryland,1,1,1,TRUE,TRUE,Has both design system and DST
+Massachusetts,1,1,1,TRUE,TRUE,Has both design system and DST
+Michigan,1,1,0,TRUE,FALSE,Has design system only
+Missouri,1,0,0,FALSE,FALSE,No design system or DST
+Montana,1,0,0,FALSE,FALSE,No design system or DST
+Nebraska,1,0,0,FALSE,FALSE,No design system or DST
+Nevada,1,0,0,FALSE,FALSE,No design system or DST
+New Jersey,1,1,1,TRUE,TRUE,Has both design system and DST
+North Carolina,1,0,1,FALSE,TRUE,Has DST only
+North Dakota,1,0,0,FALSE,FALSE,No design system or DST
+Ohio,1,1,0,TRUE,FALSE,Has design system only
+Rhode Island,1,1,1,TRUE,TRUE,Has both design system and DST
+Tennessee,1,0,0,FALSE,FALSE,No design system or DST
+Texas,1,0,0,FALSE,FALSE,No design system or DST
+Vermont,1,1,1,TRUE,TRUE,Has both design system and DST
+Washington,1,0,0,FALSE,FALSE,No design system or DST
+Wyoming,1,0,0,FALSE,FALSE,No design system or DST

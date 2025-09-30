@@ -1,0 +1,15 @@
+state_territory,executive_orders,ai_legislations,chief_data_officers,digital_service_teams,digital_service_impact_reports,design_systems,activity_score,categories_present,rank_most
+California,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1
+Colorado,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1
+Massachusetts,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1
+New Jersey,1,1,1,1,1,1,6,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",1
+Connecticut,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5
+Delaware,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5
+Maryland,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5
+North Carolina,1,1,1,1,1,0,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports",5
+Vermont,1,1,1,1,0,1,5,"Executive orders, AI legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",5
+Michigan,1,1,1,0,0,1,4,"Executive orders, AI legislations, Chief Data Officers (CDO), Design systems",10
+Minnesota,1,1,0,1,1,0,4,"Executive orders, AI legislations, Digital Service Teams (DST), Digital Service Impact Reports",10
+New York,1,1,0,1,1,0,4,"Executive orders, AI legislations, Digital Service Teams (DST), Digital Service Impact Reports",10
+Ohio,1,1,1,0,0,1,4,"Executive orders, AI legislations, Chief Data Officers (CDO), Design systems",10
+Rhode Island,1,0,1,1,0,1,4,"Executive orders, Chief Data Officers (CDO), Digital Service Teams (DST), Design systems",10

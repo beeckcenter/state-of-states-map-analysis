@@ -55,15 +55,13 @@ Here are the key questions explored in this analysis:
     -   Digital Service Impact Report
     -   Design system
 
--   What is the **distribution of digital transformation activities** by state/territory? (e.g., number of EOs per state)
-
 -   Which states are the **most active vs. least active** across all categories?
 
--   Which states introduced CDOs or DSTs earliest, and how has that spread across regions?
+-   Which states introduced **CDOs or DSTs earliest**, and how has that spread across regions?
 
 -   Which states with **active CDOs** also have **design systems** or **DSTs**?
 
--   Are states with AI legislation more likely to have other forms of digital infrastructure (DST, design systems)?
+-   Are states with **AI legislation** more likely to have other forms of digital infrastructure (DST, design systems)?
 
 -   What are the **most common policy topics** in executive orders (e.g., broadband, interoperability, AI)?
 
@@ -71,11 +69,9 @@ Here are the key questions explored in this analysis:
 
 -   What is the **trend over time** in the number of executive orders and AI legislations enacted?
 
--   Do **early adopters** (states with policies from 2010–2015) differ from late adopters in 2020–2025?
+-   Do **early adopters** (states with policies from 2010–2015) differ from **late adopters** in 2020–2025?
 
 -   Do states with **higher numbers of executive orders** also pass more legislations or rules?
-
--   Do states with **impact reports** show evidence of greater adoption of other digital practices?
 
 -   Other ideas: Heatmaps of activity types by state, regional comparisons (Northeast vs. South vs. West), and timelines of adoption by year (EOs, bills, rules).
 
@@ -415,6 +411,8 @@ policy_data_clean <- policy_data_clean %>%
 
 I will look at each question one by one and clean the data as I go. I will organize the data during the analysis before exploring the results. I'll also export intermediate results into tidy CSV files so they are ready for further visualization and exploration.
 
+### Q1
+
 -   How many **states/territories** have at least one:
 
     -   Executive order
@@ -429,9 +427,7 @@ I will look at each question one by one and clean the data as I go. I will organ
 #| message: false
 #| warning: false
 
-library(readr); library(here)
 map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
-
 
 # Packages
 library(tidyverse)
@@ -533,6 +529,8 @@ webshot2::webshot(here("output", "q1.html"), file = here("output", "q1.png"),
 insights$statement
 ```
 
+### Q2
+
 -   Which **regions** have the most vs least:
 
     -   Executive order
@@ -547,34 +545,496 @@ insights$statement
 
     -   Design systems
 
-```{r}
-
-```
-
--   What is the **distribution of digital transformation activities** by state/territory? (e.g., number of EOs per state)
+I grouped states and territories into CDC regions and flagged whether each had an executive order, AI legislation, a Chief Data Officer (CDO), a Digital Service Team (DST), a Digital Service Impact Report, or a design system. I then summed counts within each region to identify where adoption was highest and lowest.
 
 ```{r}
+#| label: research-question-2
+#| message: false
+#| warning: false
 
+library(readr); library(here)
+library(dplyr); library(tidyr); library(purrr)
+library(glue)
+
+map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
+
+# Indicators
+indicators <- c(
+  executive_orders                = "Executive order",
+  ai_legislations                 = "AI legislation",
+  chief_data_officers             = "Chief Data Officer (CDO)",
+  digital_service_teams           = "Digital Service Team (DST)",
+  digital_service_impact_reports  = "Digital Service Impact Report",
+  design_systems                  = "Design system"
+)
+
+region_order <- c("Northeast","Midwest","South","West","Territories")
+
+# Prep: one row per state, coerce to logical
+map_prepped <- map_data_clean %>%
+  distinct(state_territory, .keep_all = TRUE) %>%
+  filter(!is.na(region)) %>%
+  mutate(region = factor(region, levels = region_order)) %>%
+  mutate(across(any_of(names(indicators)),
+                ~ dplyr::coalesce(. == 1L | . == TRUE, FALSE)))
+
+# Counts by region & indicator
+region_counts <- map_prepped %>%
+  select(region, any_of(names(indicators))) %>%
+  pivot_longer(-region, names_to = "indicator", values_to = "has_it") %>%
+  group_by(region, indicator) %>%
+  summarise(count = sum(has_it, na.rm = TRUE), .groups = "drop") %>%
+  mutate(label = recode(indicator, !!!indicators)) %>%
+  arrange(label, region)
+
+# Find most/least per indicator
+most_tbl <- region_counts %>%
+  group_by(indicator) %>%
+  slice_max(count, with_ties = TRUE) %>%
+  ungroup() %>%
+  mutate(which = "most")
+
+least_tbl <- region_counts %>%
+  group_by(indicator) %>%
+  slice_min(count, with_ties = TRUE) %>%
+  ungroup() %>%
+  mutate(which = "least")
+
+# Build sentences
+pretty_regions <- function(x) paste(x, collapse = ", ")
+mk_sentence <- function(rows, which, obj) {
+  regs <- pretty_regions(rows$region)
+  glue("{regs} has the {which} {obj}.")
+}
+
+insights_q2 <- tibble(indicator = unique(region_counts$indicator)) %>%
+  mutate(
+    label = recode(indicator, !!!indicators),
+    statement = map_chr(indicator, \(ind) {
+      most  <- filter(most_tbl,  indicator == ind)
+      least <- filter(least_tbl, indicator == ind)
+      paste(
+        mk_sentence(most, "most",  recode(ind, !!!indicators)),
+        mk_sentence(least, "least", recode(ind, !!!indicators))
+      )
+    })
+  ) %>%
+  select(label, statement)
+
+# Save both outputs
+write_csv(region_counts, here("output", "region_counts_q2.csv"))
+write_csv(insights_q2,  here("output", "insights_q2.csv"))
+
+# Print results in document
+# region_counts
+insights_q2
 ```
+
+### Q3
 
 -   Which states are the **most active vs. least active** across all categories?
 
--   Which states introduced CDOs or DSTs earliest, and how has that spread across regions?
+To measure overall state activity, I created a six-item score where states received one point for the presence of each digital activity (executive orders, AI legislation, CDO, DST, Digital Service Impact Report, design system). Each state’s score ranged from 0–6 to indicate the breadth of digital transformation. I then ranked states by total score and identified the most and least active states.
+
+```{r}
+#| label: research-question-3
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(tidyr); library(purrr); library(glue)
+
+# 1) Load
+map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
+
+# 2) Columns (names = dataset column names; values = friendly labels)
+act_labels <- c(
+  executive_orders               = "Executive orders",
+  ai_legislations                = "AI legislations",
+  chief_data_officers            = "Chief Data Officers (CDO)",
+  digital_service_teams          = "Digital Service Teams (DST)",
+  digital_service_impact_reports = "Digital Service Impact Reports",
+  design_systems                 = "Design systems"
+)
+
+# 3) Presence (0/1) per category, score out of 6 (one row per state)
+state_counts_q3 <- map_data_clean %>%
+  distinct(state_territory, .keep_all = TRUE) %>%
+  transmute(
+    state_territory,
+    across(
+      all_of(names(act_labels)),
+      ~ as.integer(dplyr::coalesce(. >= 1L, FALSE))
+    )
+  ) %>%
+  mutate(
+    activity_score = rowSums(across(all_of(names(act_labels)))),
+    categories_present = pmap_chr(
+      across(all_of(names(act_labels))),
+      ~ {
+        vals <- c(...)
+        labs <- act_labels[vals == 1]
+        if (length(labs) == 0) "None" else paste(labs, collapse = ", ")
+      }
+    )
+  ) %>%
+  arrange(desc(activity_score), state_territory)
+
+# 4) Full ranks (for later viz)
+state_ranks_q3 <- state_counts_q3 %>%
+  mutate(
+    rank_desc = min_rank(desc(activity_score)),  # 1 = most active
+    rank_asc  = min_rank(activity_score)        # 1 = least active
+  ) %>%
+  arrange(rank_desc, state_territory)
+
+# 5) Top/bottom 10 (ties included at the cutoff)
+top10 <- state_ranks_q3 %>% filter(rank_desc <= 10)
+bot10 <- state_ranks_q3 %>% filter(rank_asc  <= 10)
+
+fmt_list <- function(df) paste0(df$state_territory, " (", df$activity_score, "/6)", collapse = "; ")
+
+insights_q3 <- tibble(
+  type = c("Most active (top 10; ties included)", "Least active (bottom 10; ties included)"),
+  statement = c(fmt_list(top10), fmt_list(bot10))
+)
+
+# 6) Save (match Q2 naming pattern: *_q3.csv) -------------------------------
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(state_counts_q3, here("output", "state_counts_q3.csv"))
+write_csv(insights_q3,     here("output", "insights_q3.csv"))
+write_csv(state_ranks_q3,  here("output", "state_ranks_q3.csv"))
+
+# 7) Print in document (same pattern as Q2)
+# state_counts_q3
+insights_q3
+```
+
+### Q4
+
+-   Which states introduced **CDOs or DSTs earliest**, and how has that spread across regions?
+
+For CDOs, I filtered to states with an active CDO and recorded the year the office was established. I then identified the earliest and most recent adopters. For DSTs, I imported a separate dataset of team founding years and names, cleaned it, and identified the earliest and latest established teams.
+
+```{r}
+#| label: research-question-4
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(glue)
+
+# -------------------------------------------------------------------
+# 1) Load map_data_clean
+map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
+
+# -------------------------------------------------------------------
+# 2) Import and clean dst_data.csv -> dst_data_clean
+dst_data_clean <- read_csv(here("data", "dst_data.csv"),
+                           show_col_types = FALSE) %>%
+  mutate(
+    team_year_founded = as.integer(team_year_founded),
+    state_territory   = as.character(state_territory),
+    team_name         = as.character(team_name)
+  )
+
+# Save cleaned DST data
+write_rds(dst_data_clean, here("output", "dst_data_clean.rds"))
+write_csv(dst_data_clean, here("output", "dst_data_clean.csv"))
+
+# -------------------------------------------------------------------
+# 3) CDO analysis
+cdo_tbl <- map_data_clean %>%
+  distinct(state_territory, .keep_all = TRUE) %>%
+  filter(!is.na(cdo_year_established) & chief_data_officers >= 1) %>%
+  transmute(state_territory, cdo_year_established)
+
+earliest_cdo <- cdo_tbl %>%
+  filter(cdo_year_established == min(cdo_year_established, na.rm = TRUE))
+latest_cdo <- cdo_tbl %>%
+  filter(cdo_year_established == max(cdo_year_established, na.rm = TRUE))
+
+insights_cdo <- tibble(
+  statement = c(
+    glue("{earliest_cdo$state_territory} introduced CDOs earliest in {earliest_cdo$cdo_year_established}."),
+    glue("{latest_cdo$state_territory} introduced CDOs the latest in {latest_cdo$cdo_year_established}.")
+  )
+)
+
+# -------------------------------------------------------------------
+# 4) DST analysis
+dst_tbl <- dst_data_clean %>%
+  filter(!is.na(team_year_founded)) %>%
+  arrange(team_year_founded)
+
+earliest_dst <- dst_tbl %>%
+  filter(team_year_founded == min(team_year_founded, na.rm = TRUE))
+latest_dst <- dst_tbl %>%
+  filter(team_year_founded == max(team_year_founded, na.rm = TRUE))
+
+insights_dst <- tibble(
+  statement = c(
+    glue("{earliest_dst$state_territory} introduced its Digital Service Team ({earliest_dst$team_name}) earliest in {earliest_dst$team_year_founded}."),
+    glue("{latest_dst$state_territory} introduced its Digital Service Team ({latest_dst$team_name}) the latest in {latest_dst$team_year_founded}.")
+  )
+)
+
+# -------------------------------------------------------------------
+# 5) Save outputs
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+
+write_csv(cdo_tbl,      here("output", "cdo_years_q4.csv"))
+write_csv(insights_cdo, here("output", "insights_cdo_q4.csv"))
+
+write_csv(dst_tbl,      here("output", "dst_years_q4.csv"))
+write_csv(insights_dst, here("output", "insights_dst_q4.csv"))
+
+# -------------------------------------------------------------------
+# 6) Print in document
+cdo_tbl
+insights_cdo
+
+dst_tbl
+insights_dst
+```
+
+### Q5
 
 -   Which states with **active CDOs** also have **design systems** or **DSTs**?
 
--   Are states with AI legislation more likely to have other forms of digital infrastructure (DST, design systems)?
+I examined whether states with CDOs also adopted other infrastructure (design systems or DSTs). After filtering to states with active CDOs, I tallied how many also had design systems or DSTs. I then compared the likelihood of having a DST between states with and without CDOs using a relative likelihood ratio.
+
+```{r}
+#| label: research-question-5
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(glue)
+
+# -------------------------------------------------------------------
+# 1) Load cleaned dataset
+map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
+
+# -------------------------------------------------------------------
+# 2) Prep: keep one row per state/territory, coerce presence to 0/1
+q5_tbl <- map_data_clean %>%
+  distinct(state_territory, .keep_all = TRUE) %>%
+  transmute(
+    state_territory,
+    cdo    = as.integer(coalesce(chief_data_officers,        0L) >= 1L),
+    design = as.integer(coalesce(design_systems,             0L) >= 1L),
+    dst    = as.integer(coalesce(digital_service_teams,      0L) >= 1L)
+  )
+
+# -------------------------------------------------------------------
+# 3) Which states with active CDOs also have design systems or DSTs?
+cdo_active <- q5_tbl %>% filter(cdo == 1)
+
+cdo_with_design_or_dst <- cdo_active %>%
+  filter(design == 1 | dst == 1)
+
+num_states <- nrow(cdo_with_design_or_dst)
+state_names <- paste(cdo_with_design_or_dst$state_territory, collapse = ", ")
+
+# -------------------------------------------------------------------
+# 4) Likelihood comparison: probability of DST with CDO vs. without
+p_dst_with_cdo <- mean(cdo_active$dst == 1, na.rm = TRUE)
+p_dst_without  <- mean(q5_tbl %>% filter(cdo == 0) %>% pull(dst) == 1, na.rm = TRUE)
+
+likelihood_ratio <- ifelse(p_dst_without > 0, p_dst_with_cdo / p_dst_without, NA_real_)
+
+# Round ratio nicely (e.g., 2.2x more likely)
+ratio_text <- ifelse(is.na(likelihood_ratio), "undefined",
+                     paste0(round(likelihood_ratio, 1), "x more"))
+
+# -------------------------------------------------------------------
+# 5) Build insight statements
+insights_q5 <- tibble(
+  statement = c(
+    glue("{num_states} states with active CDOs also have design systems or DSTs. They are {state_names}."),
+    glue("States with Chief Data Officers are {ratio_text} likely to have digital service teams.")
+  )
+)
+
+# -------------------------------------------------------------------
+# 6) Save outputs
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(q5_tbl,        here("output", "state_counts_q5.csv"))
+write_csv(insights_q5,   here("output", "insights_q5.csv"))
+
+# -------------------------------------------------------------------
+# 7) Print results
+q5_tbl
+insights_q5
+```
+
+### Q6
+
+-   Are states with **AI legislation** more likely to have other forms of digital infrastructure (DST, design systems)?
+
+I defined “digital infrastructure” broadly as the presence of any of the following: a CDO, DST, Digital Service Impact Report, or design system. I then compared the probability of having this infrastructure between states with versus without executive orders, AI legislation, or any policy (executive order or AI). Likelihood ratios were calculated to quantify differences, and notable examples were listed.
+
+```{r}
+#| label: research-question-6
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(glue)
+
+# Load
+map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
+
+# Prep (one row/state; presence 0/1)
+q6_tbl <- map_data_clean %>%
+  distinct(state_territory, .keep_all = TRUE) %>%
+  transmute(
+    state_territory,
+    eo     = as.integer(coalesce(executive_orders,          0L) >= 1L),
+    ai     = as.integer(coalesce(ai_legislations,           0L) >= 1L),
+    cdo    = as.integer(coalesce(chief_data_officers,       0L) >= 1L),
+    dst    = as.integer(coalesce(digital_service_teams,     0L) >= 1L),
+    dsir   = as.integer(coalesce(digital_service_impact_reports, 0L) >= 1L),
+    design = as.integer(coalesce(design_systems,            0L) >= 1L)
+  ) %>%
+  mutate(
+    # DEFINITION NOTE:
+    # "Digital infrastructure" = present if ANY of the following are present:
+    #   CDO OR Digital Service Team (DST) OR Digital Service Impact Report (DSIR) OR Design system
+    infra = as.integer(cdo == 1 | dst == 1 | dsir == 1 | design == 1),
+    any_policy = as.integer(eo == 1 | ai == 1)
+  )
+
+# Helper: ratio + notable examples
+calc_ratio <- function(df, policy_col) {
+  with_policy    <- df %>% filter(.data[[policy_col]] == 1)
+  without_policy <- df %>% filter(.data[[policy_col]] == 0)
+
+  p_with    <- mean(with_policy$infra == 1, na.rm = TRUE)
+  p_without <- mean(without_policy$infra == 1, na.rm = TRUE)
+
+  ratio <- ifelse(p_without > 0, p_with / p_without, NA_real_)
+  ratio_text <- ifelse(is.na(ratio), "undefined", paste0(round(ratio, 1), "x more"))
+
+  notable <- with_policy %>% filter(infra == 1) %>% pull(state_territory)
+  notable_text <- ifelse(length(notable) > 0, paste(notable, collapse = ", "), "None")
+
+  list(ratio_text = ratio_text, notable_text = notable_text)
+}
+
+# Ratios + statements
+eo_stats  <- calc_ratio(q6_tbl, "eo")
+ai_stats  <- calc_ratio(q6_tbl, "ai")
+any_stats <- calc_ratio(q6_tbl, "any_policy")
+
+insights_q6 <- tibble(
+  statement = c(
+    glue("States with executive orders are {eo_stats$ratio_text} likely to have other forms of digital infrastructure (CDO, DST, Digital Service Impact Report, design system). Notable examples are {eo_stats$notable_text}."),
+    glue("States with AI legislation are {ai_stats$ratio_text} likely to have other forms of digital infrastructure (CDO, DST, Digital Service Impact Report, design system). Notable examples are {ai_stats$notable_text}."),
+    glue("States with any policy (AI legislation and/or executive orders) are {any_stats$ratio_text} likely to have other forms of digital infrastructure (CDO, DST, Digital Service Impact Report, design system). Notable examples are {any_stats$notable_text}.")
+  )
+)
+
+# Save outputs
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(q6_tbl,      here("output", "state_counts_q6.csv"))
+write_csv(insights_q6, here("output", "insights_q6.csv"))
+
+# Print results
+q6_tbl
+insights_q6
+```
+
+### Q7
+
+-   In which region(s) do **AI legislation cluster** in?
+
+To assess whether AI legislation clusters in particular regions, I calculated both **absolute counts** and **relative proportions**. First, I assigned each state or territory to its CDC region grouping and flagged whether it had AI legislation. I then aggregated by region to count the number of states with AI legislation (absolute clustering) and the percentage of states within the region that had AI legislation (relative clustering). Absolute counts highlight where most AI laws are located overall, while proportions account for differences in region size.
+
+```{r}
+#| label: research-question-7
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(glue); library(tidyr)
+
+# 1) Load
+map_data_clean <- read_rds(here("output", "map_data_clean.rds"))
+
+# 2) Prep: one row per state/territory with region + AI presence (0/1)
+q7_tbl <- map_data_clean %>%
+  distinct(state_territory, .keep_all = TRUE) %>%
+  transmute(
+    state_territory,
+    region = as.character(region),
+    ai_legislation = as.integer(dplyr::coalesce(ai_legislations, 0L) >= 1L)
+  )
+
+# 3) Summarize by region: counts and proportions
+region_ai_counts <- q7_tbl %>%
+  group_by(region) %>%
+  summarise(
+    n_states       = n(),
+    ai_states      = sum(ai_legislation, na.rm = TRUE),
+    percent_with_ai= round(100 * ai_states / n_states, 1),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(ai_states), desc(percent_with_ai))
+
+# 4) Identify clustering by absolute count and by proportion (tie-aware)
+max_count <- max(region_ai_counts$ai_states, na.rm = TRUE)
+max_prop  <- max(region_ai_counts$percent_with_ai, na.rm = TRUE)
+
+cluster_count_regions <- region_ai_counts %>%
+  filter(ai_states == max_count) %>%
+  pull(region)
+
+cluster_prop_regions <- region_ai_counts %>%
+  filter(percent_with_ai == max_prop) %>%
+  pull(region)
+
+fmt_regions <- function(x) paste(x, collapse = ", ")
+
+# 5) Insight statements (both views)
+insights_q7 <- tibble(
+  statement = c(
+    glue("By absolute count, AI legislation tends to cluster in the {fmt_regions(cluster_count_regions)}."),
+    glue("By share of states, AI legislation tends to cluster in the {fmt_regions(cluster_prop_regions)}.")
+  )
+)
+
+# 6) Save
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(region_ai_counts, here("output", "region_ai_counts_q7.csv"))
+write_csv(insights_q7,      here("output", "insights_q7.csv"))
+
+# 7) Print
+region_ai_counts
+insights_q7
+```
+
+### Q8
 
 -   What are the **most common policy topics** in executive orders (e.g., broadband, interoperability, AI)?
 
+### Q9
+
 -   What are the **most common policy topics** in AI legislations orders (e.g., broadband, interoperability, AI)?
+
+### Q10
 
 -   What is the **trend over time** in the number of executive orders and AI legislations enacted?
 
--   Do **early adopters** (states with policies from 2010–2015) differ from late adopters in 2020–2025?
+### Q11
 
--   Do states with **higher numbers of executive orders** also pass more legislations or rules?
+-   Do **early adopters** (states with policies from 2010–2015) differ from **late adopters** in 2020–2025?
 
--   Do states with **impact reports** show evidence of greater adoption of other digital practices?
+### Q12
+
+-   Do certain AI legislation topics **cluster in certain regions**? Do certain executive topics topics cluster in certain regions?
+
+### Other ideas
 
 -   Other ideas: Heatmaps of activity types by state, regional comparisons (Northeast vs. South vs. West), and timelines of adoption by year (EOs, bills, rules).

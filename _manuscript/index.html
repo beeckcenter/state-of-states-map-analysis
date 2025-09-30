@@ -1,155 +1,66 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
-    <meta charset="utf-8">
-    <meta name="generator" content="quarto-1.7.31">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
 
-    <meta name="author" content="Elham Ali">
-    <meta name="dcterms.date" content="2025-09-30">
-    <meta name="keywords" content="civic tech, digital transformation, state government, map, research">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-    <title>State of the States map analysis</title>
-    <style>
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      div.columns{display: flex; gap: min(4vw, 1.5em);}
-      div.column{flex: auto; overflow-x: auto;}
-      div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-      ul.task-list{list-style: none;}
-      ul.task-list li input[type="checkbox"] {
-        width: 0.8em;
-        margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
-        vertical-align: middle;
-      }
-      /* CSS for syntax highlighting */
-      html { -webkit-text-size-adjust: 100%; }
-      pre > code.sourceCode { white-space: pre; position: relative; }
-      pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-      pre > code.sourceCode > span:empty { height: 1.2em; }
-      .sourceCode { overflow: visible; }
-      code.sourceCode > span { color: inherit; text-decoration: inherit; }
-      div.sourceCode { margin: 1em 0; }
-      pre.sourceCode { margin: 0; }
-      @media screen {
-      div.sourceCode { overflow: auto; }
-      }
-      @media print {
-      pre > code.sourceCode { white-space: pre-wrap; }
-      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-      }
-      pre.numberSource code
-        { counter-reset: source-line 0; }
-      pre.numberSource code > span
-        { position: relative; left: -4em; counter-increment: source-line; }
-      pre.numberSource code > span > a:first-child::before
-        { content: counter(source-line);
-          position: relative; left: -1em; text-align: right; vertical-align: baseline;
-          border: none; display: inline-block;
-          -webkit-touch-callout: none; -webkit-user-select: none;
-          -khtml-user-select: none; -moz-user-select: none;
-          -ms-user-select: none; user-select: none;
-          padding: 0 4px; width: 4em;
-        }
-      pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-      div.sourceCode
-        {   }
-      @media screen {
-      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-      }
-    </style>
+<meta name="author" content="Elham Ali">
+<meta name="dcterms.date" content="2025-09-30">
+<meta name="keywords" content="civic tech, digital transformation, state government, map, research">
 
-    <style>
-      body.hypothesis-enabled #quarto-embed-header {
-        padding-right: 36px;
-      }
+<title>State of the States map analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
 
-      #quarto-embed-header {
-        height: 3em;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: solid 1px;
-      }
 
-      #quarto-embed-header h6 {
-        font-size: 1.1em;
-        padding-top: 0.6em;
-        margin-left: 1em;
-        margin-right: 1em;
-        font-weight: 400;
-      }
-
-      #quarto-embed-header a.quarto-back-link,
-      #quarto-embed-header a.quarto-download-embed {
-        font-size: 0.8em;
-        margin-top: 1em;
-        margin-bottom: 1em;
-        margin-left: 1em;
-        margin-right: 1em;
-      }
-
-      .quarto-back-container {
-        padding-left: 0.5em;
-        display: flex;
-      }
-
-      .headroom {
-          will-change: transform;
-          transition: transform 200ms linear;
-      }
-
-      .headroom--pinned {
-          transform: translateY(0%);
-      }
-
-      .headroom--unpinned {
-          transform: translateY(-100%);
-      }      
-    </style>
-
-    <script>
-    window.document.addEventListener("DOMContentLoaded", function () {
-
-      var header = window.document.querySelector("#quarto-embed-header");
-      const titleBannerEl = window.document.querySelector("body > #title-block-header");
-      if (titleBannerEl) {
-        titleBannerEl.style.paddingTop = header.clientHeight + "px";
-      }
-      const contentEl = window.document.getElementById('quarto-content');
-      for (const child of contentEl.children) {
-        child.style.paddingTop = header.clientHeight + "px";
-        child.style.marginTop = "1em";
-      }
-
-      // Use the article root if the `back` call doesn't work. This isn't perfect
-      // but should typically work
-      window.quartoBackToArticle = () => {
-        var currentUrl = window.location.href;
-        window.history.back();
-        setTimeout(() => {
-            // if location was not changed in 100 ms, then there is no history back
-            if(currentUrl === window.location.href){              
-                // redirect to site root
-                window.location.href = "index.html";
-            }
-        }, 100);
-      }
-
-      const headroom = new window.Headroom(header, {
-        tolerance: 5,
-        onPin: function () {
-        },
-        onUnpin: function () {
-        },
-      });
-      headroom.init();
-    });
-    </script>
-
-    
-<script src="site_libs/manuscript-notebook/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -164,13 +75,15 @@
 <script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
-     <script async="" src="https://hypothes.is/embed.js"></script>
+<script async="" src="https://hypothes.is/embed.js"></script>
 <script>
   window.document.addEventListener("DOMContentLoaded", function (_event) {
     document.body.classList.add('hypothesis-enabled');
   });
-</script>  
-      <meta name="citation_title" content="State of the States map analysis">
+</script>
+
+
+<meta name="citation_title" content="State of the States map analysis">
 <meta name="citation_abstract" content="This analysis aims to explore trends of digital transformation, specifically on policy, chief data officers, digital service teams, impact reports, and design systems across U.S. states and territories.
 ">
 <meta name="citation_keywords" content="civic tech,digital transformation,state government,map,research">
@@ -185,16 +98,9 @@
 <meta name="citation_reference" content="citation_title=Stratified Sampling in R: A Practical Guide with Base R and dplyr  Steve’s Data Tips and Tricks;,citation_author=Steven Sanderson;,citation_publication_date=2024-07-29;,citation_cover_date=2024-07-29;,citation_year=2024;,citation_fulltext_html_url=https://www.spsanderson.com/steveondata/posts/2024-07-29/;,citation_language=en;">
 </head>
 
-  <body class="quarto-notebook quarto-light">
-    <div id="quarto-embed-header" class="headroom fixed-top bg-primary">
-      
-      <a onclick="window.quartoBackToArticle(); return false;" class="btn btn-primary quarto-back-link" href=""><i class="bi bi-caret-left"></i> Back to Article</a>
-      <h6><i class="bi bi-journal-code"></i> Article Notebook</h6>
+<body class="quarto-light">
 
-            <a href="./analysis.qmd" class="btn btn-primary quarto-download-embed" download="analysis.qmd">Download Source</a>
-          </div>
-
-     <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
       <h1 class="title">State of the States map analysis</h1>
@@ -231,7 +137,7 @@
               </div>
       </div>
       <div class="quarto-title-meta-column-end quarto-other-formats-target">
-      </div>
+      <div class="quarto-alternate-formats"><div class="quarto-title-meta-heading">Other Formats</div><div class="quarto-title-meta-contents"><p><a href="analysis.pdf"><i class="bi bi-file-pdf"></i>PDF</a></p></div><div class="quarto-title-meta-contents"><p><a href="analysis.docx"><i class="bi bi-file-word"></i>MS Word</a></p></div><div class="quarto-title-meta-contents"><p><a href="analysis-meca.zip" data-meca-link="true"><i class="bi bi-archive"></i>MECA Bundle</a></p></div></div></div>
     </div>
 
     <div>
@@ -281,13 +187,18 @@
   <li><a href="#other-ideas" id="toc-other-ideas" class="nav-link" data-scroll-target="#other-ideas">Other ideas</a></li>
   </ul></li>
   </ul>
-</nav>
+<div class="quarto-alternate-notebooks"><h2>Notebooks</h2><ul><li><a href="analysis-preview.html"><i class="bi bi-journal-code"></i>Article Notebook</a></li></ul></div></nav>
 </div>
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
-<main class="content quarto-banner-title-block" id="quarto-document-content">      
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
-       <section id="background" class="level2">
+
+
+  
+
+
+<section id="background" class="level2">
 <h2 class="anchored" data-anchor-id="background">Background</h2>
 <p>When public climate &amp; EJ evidence disappears (removed, restricted, or altered), a decade of downstream knowledge becomes harder to verify, reproduce, teach, or apply—especially for communities and decisions that most need it.<br>
 This analysis looks at how many studies have used these tools, their topics, and their use cases.</p>
@@ -331,13 +242,13 @@ This analysis looks at how many studies have used these tools, their topics, and
 <section id="cleaning" class="level2">
 <h2 class="anchored" data-anchor-id="cleaning">Cleaning</h2>
 <p>I start by loading the packages needed for file handling, data wrangling, and visualization.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [1]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Folder structure helpers</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>here() starts at /Users/elhamali/Documents/Data Projects/state-of-states-map-analysis</code></pre>
 </div>
 <details class="code-fold">
@@ -347,7 +258,7 @@ This analysis looks at how many studies have used these tools, their topics, and
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Data import &amp; cleaning</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ✔ dplyr     1.1.4     ✔ readr     2.1.5
 ✔ forcats   1.0.0     ✔ stringr   1.5.1
@@ -355,7 +266,7 @@ This analysis looks at how many studies have used these tools, their topics, and
 ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
 ✔ purrr     1.1.0     </code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::filter() masks stats::filter()
 ✖ dplyr::lag()    masks stats::lag()
@@ -365,7 +276,7 @@ This analysis looks at how many studies have used these tools, their topics, and
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>
 Attaching package: 'janitor'
 
@@ -382,7 +293,7 @@ The following objects are masked from 'package:stats':
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Visualization</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(highcharter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>Registered S3 method overwritten by 'quantmod':
   method            from
   as.zoo.data.frame zoo </code></pre>
@@ -391,7 +302,7 @@ The following objects are masked from 'package:stats':
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(igraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>
 Attaching package: 'igraph'
 
@@ -429,11 +340,11 @@ The following object is masked from 'package:base':
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(htmlwidgets)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-</div></div>
+<a class="quarto-notebook-link" id="nblink-1" href="analysis-preview.html">Source: Article Notebook</a></div>
 <section id="import-raw-data" class="level3">
 <h3 class="anchored" data-anchor-id="import-raw-data">Import raw data</h3>
 <p>I import all .csv files from the <code>data/</code> folder, then save them as .rds files into <code>output/</code>. This preserves their structure and speeds up future reads.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [2]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># List all CSV files</span></span>
@@ -450,7 +361,7 @@ The following object is masked from 'package:base':
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span> <span class="fu">saveRDS</span>(.x, <span class="fu">here</span>(<span class="st">"output"</span>, <span class="fu">paste0</span>(.y, <span class="st">".rds"</span>)))</span>
 <span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-</div></div>
+</div>
 </section>
 <section id="clean-both-datasets" class="level3">
 <h3 class="anchored" data-anchor-id="clean-both-datasets">Clean both datasets</h3>
@@ -487,7 +398,7 @@ The following object is masked from 'package:base':
 <li><strong>Territories</strong>: Includes American Samoa, Guam, the Northern Mariana Islands, Puerto Rico, and the U.S. Virgin Islands (not included in CDC’s regional mapping, but I added here to include the territories)</li>
 </ul></li>
 </ul>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [3]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># -------------------------------------------------------------------</span></span>
@@ -500,11 +411,11 @@ The following object is masked from 'package:base':
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>
 Attaching package: 'fs'</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>The following object is masked from 'package:igraph':
 
     path</code></pre>
@@ -666,9 +577,9 @@ Attaching package: 'fs'</code></pre>
 <span id="cb17-153"><a href="#cb17-153" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">write_csv</span>(map_clean,    <span class="fu">here</span>(<span class="st">"output"</span>, <span class="st">"map_data_clean.csv"</span>), <span class="at">na =</span> <span class="st">""</span>)</span>
 <span id="cb17-154"><a href="#cb17-154" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">write_csv</span>(policy_clean, <span class="fu">here</span>(<span class="st">"output"</span>, <span class="st">"policy_data_clean.csv"</span>), <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-</div></div>
+</div>
 <p>I’ll now assign the right variable types for the cleaned datasets.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [4]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -738,7 +649,7 @@ Attaching package: 'fs'</code></pre>
 <span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a>    <span class="at">region =</span> <span class="fu">to_region_factor</span>(region)</span>
 <span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-</div></div>
+</div>
 </section>
 </section>
 <section id="analysis" class="level2">
@@ -757,7 +668,7 @@ Attaching package: 'fs'</code></pre>
 <li>Design system</li>
 </ul></li>
 </ul>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [5]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>map_data_clean <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="fu">here</span>(<span class="st">"output"</span>, <span class="st">"map_data_clean.rds"</span>))</span>
@@ -770,16 +681,16 @@ Attaching package: 'fs'</code></pre>
 <span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
 <span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>
 Attaching package: 'scales'</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>The following object is masked from 'package:purrr':
 
     discard</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>The following object is masked from 'package:readr':
 
     col_factor</code></pre>
@@ -875,13 +786,13 @@ Attaching package: 'scales'</code></pre>
 <span id="cb23-87"><a href="#cb23-87" aria-hidden="true" tabindex="-1"></a>webshot2<span class="sc">::</span><span class="fu">webshot</span>(<span class="fu">here</span>(<span class="st">"output"</span>, <span class="st">"q1.html"</span>), <span class="at">file =</span> <span class="fu">here</span>(<span class="st">"output"</span>, <span class="st">"q1.png"</span>),</span>
 <span id="cb23-88"><a href="#cb23-88" aria-hidden="true" tabindex="-1"></a>                  <span class="at">vwidth =</span> <span class="dv">900</span>, <span class="at">vheight =</span> <span class="dv">600</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
+<div class="cell-output cell-output-stderr hidden">
 <pre><code>file:////Users/elhamali/Documents/Data Projects/state-of-states-map-analysis/output/q1.html screenshot completed</code></pre>
 </div>
 <div class="cell-output-display">
-<div class="">
+<div>
 <figure class="figure">
-<p class=""><a href="analysis_files/figure-html/research-question-1-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="analysis_files/figure-html/research-question-1-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="analysis_files/figure-html/research-question-1-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="analysis_files/figure-html/research-question-1-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -897,7 +808,7 @@ Attaching package: 'scales'</code></pre>
 25.0% U.S. states/territories have a digital service team (DST).
 12.5% U.S. states/territories have a digital service impact report.</code></pre>
 </div>
-</div></div>
+</div>
 </section>
 <section id="q2" class="level3">
 <h3 class="anchored" data-anchor-id="q2">Q2</h3>
@@ -913,7 +824,7 @@ Attaching package: 'scales'</code></pre>
 </ul></li>
 </ul>
 <p>I grouped states and territories into CDC regions and flagged whether each had an executive order, AI legislation, a Chief Data Officer (CDO), a Digital Service Team (DST), a Digital Service Impact Report, or a design system. I then summed counts within each region to identify where adoption was highest and lowest.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [6]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(here)</span>
@@ -1004,7 +915,7 @@ Attaching package: 'scales'</code></pre>
 5 Digital Service Team (DST)    Northeast has the most Digital Service Team (DS…
 6 Executive order               South has the most Executive order. Territories…</code></pre>
 </div>
-</div></div>
+</div>
 </section>
 <section id="q3" class="level3">
 <h3 class="anchored" data-anchor-id="q3">Q3</h3>
@@ -1012,7 +923,7 @@ Attaching package: 'scales'</code></pre>
 <li>Which states are the <strong>most active vs.&nbsp;least active</strong> across all categories?</li>
 </ul>
 <p>To measure overall state activity, I created a six-item score where states received one point for the presence of each digital activity (executive orders, AI legislation, CDO, DST, Digital Service Impact Report, design system). Each state’s score ranged from 0–6 to indicate the breadth of digital transformation. I then ranked states by total score and identified the most and least active states.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [7]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(here)</span>
@@ -1090,7 +1001,7 @@ Attaching package: 'scales'</code></pre>
 1 Most active (top 10; ties included)     California (6/6); Colorado (6/6); Mas…
 2 Least active (bottom 10; ties included) Alabama (1/6); Alaska (1/6); American…</code></pre>
 </div>
-</div></div>
+</div>
 </section>
 <section id="q4" class="level3">
 <h3 class="anchored" data-anchor-id="q4">Q4</h3>
@@ -1098,7 +1009,7 @@ Attaching package: 'scales'</code></pre>
 <li>Which states introduced <strong>CDOs or DSTs earliest</strong>, and how has that spread across regions?</li>
 </ul>
 <p>For CDOs, I filtered to states with an active CDO and recorded the year the office was established. I then identified the earliest and most recent adopters. For DSTs, I imported a separate dataset of team founding years and names, cleaned it, and identified the earliest and latest established teams.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [8]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(here)</span>
@@ -1257,7 +1168,7 @@ Attaching package: 'scales'</code></pre>
 3 Maryland introduced its Digital Service Team (Maryland Digital Service (MDDS)…
 4 Minnesota introduced its Digital Service Team (Minnesota Digital Services, An…</code></pre>
 </div>
-</div></div>
+</div>
 </section>
 <section id="q5" class="level3">
 <h3 class="anchored" data-anchor-id="q5">Q5</h3>
@@ -1265,7 +1176,7 @@ Attaching package: 'scales'</code></pre>
 <li>Which states with <strong>active CDOs</strong> also have <strong>design systems</strong> or <strong>DSTs</strong>?</li>
 </ul>
 <p>I examined whether states with CDOs also adopted other infrastructure (design systems or DSTs). After filtering to states with active CDOs, I tallied how many also had design systems or DSTs. I then compared the likelihood of having a DST between states with and without CDOs using a relative likelihood ratio.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [9]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(here)</span>
@@ -1396,7 +1307,7 @@ Attaching package: 'scales'</code></pre>
 1 13 states with active CDOs also have design systems or DSTs. They are Arizona…
 2 States with Chief Data Officers are 3.4x more likely to have digital service …</code></pre>
 </div>
-</div></div>
+</div>
 </section>
 <section id="q6" class="level3">
 <h3 class="anchored" data-anchor-id="q6">Q6</h3>
@@ -1404,7 +1315,7 @@ Attaching package: 'scales'</code></pre>
 <li>Are states with <strong>AI legislation</strong> more likely to have other forms of digital infrastructure (DST, design systems)?</li>
 </ul>
 <p>I defined “digital infrastructure” broadly as the presence of any of the following: a CDO, DST, Digital Service Impact Report, or design system. I then compared the probability of having this infrastructure between states with versus without executive orders, AI legislation, or any policy (executive order or AI). Likelihood ratios were calculated to quantify differences, and notable examples were listed.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [10]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(here)</span>
@@ -1542,7 +1453,7 @@ Attaching package: 'scales'</code></pre>
 2 States with AI legislation are 1.8x more likely to have other forms of digita…
 3 States with any policy (AI legislation and/or executive orders) are 1.4x more…</code></pre>
 </div>
-</div></div>
+</div>
 </section>
 <section id="q7" class="level3">
 <h3 class="anchored" data-anchor-id="q7">Q7</h3>
@@ -1550,7 +1461,7 @@ Attaching package: 'scales'</code></pre>
 <li>In which region(s) do <strong>AI legislation cluster</strong> in?</li>
 </ul>
 <p>To assess whether AI legislation clusters in particular regions, I calculated both <strong>absolute counts</strong> and <strong>relative proportions</strong>. First, I assigned each state or territory to its CDC region grouping and flagged whether it had AI legislation. I then aggregated by region to count the number of states with AI legislation (absolute clustering) and the percentage of states within the region that had AI legislation (relative clustering). Absolute counts highlight where most AI laws are located overall, while proportions account for differences in region size.</p>
-<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [11]:</pre></div><div class="cell">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(here)</span>
@@ -1630,7 +1541,7 @@ Attaching package: 'scales'</code></pre>
 1 By absolute count, AI legislation tends to cluster in the South.     
 2 By share of states, AI legislation tends to cluster in the Northeast.</code></pre>
 </div>
-</div></div>
+</div>
 </section>
 <section id="q8" class="level3">
 <h3 class="anchored" data-anchor-id="q8">Q8</h3>
@@ -1669,14 +1580,29 @@ Attaching package: 'scales'</code></pre>
 </ul>
 </section>
 </section>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
 <ol>
 <li id="fn1"><p><a href="https://www.cdc.gov/nchs/hus/sources-definitions/geographic-region.htm" class="uri">https://www.cdc.gov/nchs/hus/sources-definitions/geographic-region.htm</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</section>
-     </main>
-<!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
+</section><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{ali2025,
+  author = {Ali, Elham},
+  title = {State of the {States} Map Analysis},
+  date = {2025-09-30},
+  langid = {en},
+  abstract = {This analysis aims to explore trends of digital
+    transformation, specifically on policy, chief data officers, digital
+    service teams, impact reports, and design systems across U.S. states
+    and territories.}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-ali2025" class="csl-entry quarto-appendix-citeas" role="listitem">
+Ali, Elham. 2025. <span>“State of the States Map Analysis.”</span> Beeck
+Center for Social Impact and Innovation. September 30, 2025.
+</div></div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
     const anchorJS = new window.AnchorJS();
@@ -2074,7 +2000,9 @@ Attaching package: 'scales'</code></pre>
       }
     }
   });
-  </script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+  </script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
 (function() {
   let previousOnload = window.onload;
   window.onload = () => {
@@ -2105,6 +2033,9 @@ Attaching package: 'scales'</code></pre>
   };
   
 })();
-          </script> 
-  
+          </script>
+
+
+
+
 </body></html>

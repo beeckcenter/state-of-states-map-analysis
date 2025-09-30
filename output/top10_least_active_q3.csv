@@ -1,0 +1,17 @@
+state_territory,executive_orders,ai_legislations,chief_data_officers,digital_service_teams,digital_service_impact_reports,design_systems,activity_score,categories_present,rank_least
+Puerto Rico,0,0,0,0,0,0,0,None,1
+South Dakota,0,0,0,0,0,0,0,None,1
+Alabama,1,0,0,0,0,0,1,Executive orders,3
+Alaska,1,0,0,0,0,0,1,Executive orders,3
+American Samoa,1,0,0,0,0,0,1,Executive orders,3
+Guam,1,0,0,0,0,0,1,Executive orders,3
+Kentucky,1,0,0,0,0,0,1,Executive orders,3
+Mississippi,1,0,0,0,0,0,1,Executive orders,3
+Missouri,0,0,1,0,0,0,1,Chief Data Officers (CDO),3
+Nebraska,0,0,1,0,0,0,1,Chief Data Officers (CDO),3
+New Mexico,1,0,0,0,0,0,1,Executive orders,3
+Northern Mariana Islands,1,0,0,0,0,0,1,Executive orders,3
+Oregon,1,0,0,0,0,0,1,Executive orders,3
+South Carolina,1,0,0,0,0,0,1,Executive orders,3
+U.S. Virgin Islands,0,1,0,0,0,0,1,AI legislations,3
+Wisconsin,1,0,0,0,0,0,1,Executive orders,3
