@@ -1,0 +1,7 @@
+indicator,label,count,percent,statement
+executive_orders,Executive order,47,83.9,83.9% U.S. states/territories have an executive order.
+ai_legislations,AI legislation,31,55.4,55.4% U.S. states/territories have AI legislation.
+chief_data_officers,Chief Data Officer (CDO),29,51.8,51.8% U.S. states/territories have a chief data office (CDO).
+design_systems,Design system,19,33.9,33.9% U.S. states/territories have a design system.
+digital_service_teams,Digital Service Team (DST),14,25,25.0% U.S. states/territories have a digital service team (DST).
+digital_service_impact_reports,Digital Service Impact Report,7,12.5,12.5% U.S. states/territories have a digital service impact report.
