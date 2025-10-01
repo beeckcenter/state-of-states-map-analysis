@@ -63,6 +63,8 @@ Here are the key questions explored in this analysis:
 
 -   Are states with **AI legislation** more likely to have other forms of digital infrastructure (DST, design systems)?
 
+-   In which region(s) do **AI legislation policies cluster** in?
+
 -   What are the **most common policy topics** in executive orders (e.g., broadband, interoperability, AI)?
 
 -   What are the **most common policy topics** in AI legislations orders (e.g., broadband, interoperability, AI)?
@@ -71,9 +73,7 @@ Here are the key questions explored in this analysis:
 
 -   Do **early adopters** (states with policies from 2010–2015) differ from **late adopters** in 2020–2025?
 
--   Do states with **higher numbers of executive orders** also pass more legislations or rules?
-
--   Other ideas: Heatmaps of activity types by state, regional comparisons (Northeast vs. South vs. West), and timelines of adoption by year (EOs, bills, rules).
+-   Do certain AI legislation topics **cluster in certain regions**? Do certain executive topics topics cluster in certain regions?
 
 ## Data Sources
 
@@ -948,7 +948,7 @@ insights_q6
 
 ### Q7
 
--   In which region(s) do **AI legislation cluster** in?
+-   In which region(s) do **AI legislation policies cluster** in?
 
 To assess whether AI legislation clusters in particular regions, I calculated both **absolute counts** and **relative proportions**. First, I assigned each state or territory to its CDC region grouping and flagged whether it had AI legislation. I then aggregated by region to count the number of states with AI legislation (absolute clustering) and the percentage of states within the region that had AI legislation (relative clustering). Absolute counts highlight where most AI laws are located overall, while proportions account for differences in region size.
 
@@ -1019,22 +1019,646 @@ insights_q7
 
 -   What are the **most common policy topics** in executive orders (e.g., broadband, interoperability, AI)?
 
+I parsed `executive_order_last_topic_tag_s` by normalizing separators (commas/semicolons → semicolons), splitting multi-topic strings into individual rows, trimming whitespace, and standardizing to title case. I then counted topic frequencies across all executive orders to identify the most and least common topics. For the word cloud, I used the `wordcloud` package with a fixed seed for reproducibility, scaling word size by frequency and using a categorical palette (no stemming or stop-word removal, because these are curated tags rather than free text).
+
+```{r}
+#| label: research-question-8
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(tidyr); library(stringr); library(glue)
+library(wordcloud); library(RColorBrewer)
+
+# 1) Load
+policy_data_clean <- read_rds(here("output", "policy_data_clean.rds"))
+
+# 2) Extract + clean EO topics (split multi-tags, normalize separators/spaces/case)
+eo_topics <- policy_data_clean %>%
+  filter(!is.na(executive_order_last_topic_tag_s)) %>%
+  mutate(topic_str = str_replace_all(executive_order_last_topic_tag_s, "[,|;]", ";")) %>%
+  separate_rows(topic_str, sep = ";") %>%
+  mutate(topic = str_squish(str_to_title(topic_str))) %>%
+  filter(topic != "")
+
+# 3) Count topic frequency
+topic_counts <- eo_topics %>%
+  count(topic, sort = TRUE, name = "count")
+
+# 4) Top/Bottom 10 (ties kept)
+top10_topics    <- topic_counts %>% slice_max(count, n = 10, with_ties = TRUE)
+bottom10_topics <- topic_counts %>% slice_min(count, n = 10, with_ties = TRUE)
+
+insights_q8 <- tibble(
+  statement = c(
+    glue("The 10 most common policy topics in executive orders are: {paste(top10_topics$topic, collapse = ', ')}."),
+    glue("The 10 least common policy topics in executive orders are: {paste(bottom10_topics$topic, collapse = ', ')}.")
+  )
+)
+
+# 5) Save tables
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(topic_counts,    here("output", "eo_topic_counts_q8.csv"))
+write_csv(insights_q8,     here("output", "insights_q8.csv"))
+write_csv(top10_topics,    here("output", "eo_top10_topics_q8.csv"))
+write_csv(bottom10_topics, here("output", "eo_bottom10_topics_q8.csv"))
+
+# 6) Word cloud PNG (deterministic)
+set.seed(123)
+png(filename = here("output", "eo_topics_wordcloud_q8.png"),
+    width = 1400, height = 1000, res = 150, bg = "white")
+suppressWarnings(
+  wordcloud(words = topic_counts$topic,
+            freq  = topic_counts$count,
+            min.freq = 1,
+            max.words = 200,
+            random.order = FALSE,
+            rot.per = 0.10,
+            scale = c(4, 0.8),
+            colors = brewer.pal(8, "Dark2"))
+)
+dev.off()
+
+# 7) Print in document
+topic_counts
+insights_q8
+```
+
 ### Q9
 
 -   What are the **most common policy topics** in AI legislations orders (e.g., broadband, interoperability, AI)?
+
+I analyzed policy topics in AI legislations using the `bill_topic_tag_s_text` field. I normalized multi-topic strings (commas/semicolons → semicolons), split into individual tags, trimmed for whitespace, and standardized to title case. Because every law in this dataset is inherently about artificial intelligence, I excluded the term *“Artificial Intelligence”* to avoid inflating its frequency. Topics were then tallied across all AI legislations to identify the most and least common. For visualization, I generated a word cloud with word size scaled by topic frequency and colors drawn from a categorical palette. A fixed random seed ensures reproducibility.
+
+```{r}
+#| label: research-question-9
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(tidyr); library(stringr); library(glue)
+library(wordcloud); library(RColorBrewer)
+
+# 1) Load
+policy_data_clean <- read_rds(here("output", "policy_data_clean.rds"))
+
+# 2) Extract + clean AI legislation topics
+# Variable of interest: bill_topic_tag_s_text (multi-value tags)
+ai_topics <- policy_data_clean %>%
+  filter(!is.na(bill_topic_tag_s_text)) %>%
+  mutate(topic_str = str_replace_all(bill_topic_tag_s_text, "[,|;]", ";")) %>%
+  separate_rows(topic_str, sep = ";") %>%
+  mutate(topic = str_squish(str_to_title(topic_str))) %>%
+  filter(topic != "") %>%
+  filter(topic != "Artificial Intelligence")   # remove base term to avoid inflation
+
+# 3) Count frequency
+ai_topic_counts <- ai_topics %>%
+  count(topic, sort = TRUE, name = "count")
+
+# 4) Top/Bottom 10 (ties kept)
+top10_ai_topics    <- ai_topic_counts %>% slice_max(count, n = 10, with_ties = TRUE)
+bottom10_ai_topics <- ai_topic_counts %>% slice_min(count, n = 10, with_ties = TRUE)
+
+insights_q9 <- tibble(
+  statement = c(
+    glue("The 10 most common policy topics in AI legislations are: {paste(top10_ai_topics$topic, collapse = ', ')}."),
+    glue("The 10 least common policy topics in AI legislations are: {paste(bottom10_ai_topics$topic, collapse = ', ')}.")
+  )
+)
+
+# 5) Save tables
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(ai_topic_counts,    here("output", "ai_topic_counts_q9.csv"))
+write_csv(insights_q9,        here("output", "insights_q9.csv"))
+write_csv(top10_ai_topics,    here("output", "ai_top10_topics_q9.csv"))
+write_csv(bottom10_ai_topics, here("output", "ai_bottom10_topics_q9.csv"))
+
+# 6) Word cloud PNG (deterministic)
+set.seed(123)
+png(filename = here("output", "ai_topics_wordcloud_q9.png"),
+    width = 1400, height = 1000, res = 150, bg = "white")
+suppressWarnings(
+  wordcloud(words = ai_topic_counts$topic,
+            freq  = ai_topic_counts$count,
+            min.freq = 1,
+            max.words = 200,
+            random.order = FALSE,
+            rot.per = 0.10,
+            scale = c(4, 0.8),
+            colors = brewer.pal(8, "Dark2"))
+)
+dev.off()
+
+# 7) Print in document
+ai_topic_counts
+insights_q9
+```
 
 ### Q10
 
 -   What is the **trend over time** in the number of executive orders and AI legislations enacted?
 
+I examined temporal trends by counting the number of executive orders and AI legislations enacted each year. For executive orders, I used the `executive_order_year_enacted` variable; for AI legislations, I used the `legislative_session` variable. Counts were aggregated by year, with missing years filled as zeros to provide a continuous timeline. I then described whether activity has generally increased, decreased, or remained the same by looking at the overall slope of that line (positive/negative/flat) for the overall pattern of counts across time.
+
+```{r}
+#| label: research-question-10
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(tidyr); library(stringr); library(glue)
+
+# 1) Load
+policy_data_clean <- read_rds(here("output", "policy_data_clean.rds"))
+
+# 2) Normalize scan_type and build yearly counts for both series
+dat <- policy_data_clean %>%
+  mutate(scan_type_norm = str_to_lower(str_squish(scan_type)))
+
+eo_by_year <- dat %>%
+  filter(str_detect(scan_type_norm, "executive"),
+         !is.na(executive_order_year_enacted)) %>%
+  transmute(year = as.integer(executive_order_year_enacted)) %>%
+  count(year, name = "count") %>%
+  mutate(type = "Executive orders")
+
+ai_by_year <- dat %>%
+  filter(str_detect(scan_type_norm, "legis"),
+         !is.na(legislative_session)) %>%
+  transmute(year = as.integer(legislative_session)) %>%
+  count(year, name = "count") %>%
+  mutate(type = "AI legislations")
+
+# 3) Fill missing years with zero so both series span the same axis
+all_years <- sort(unique(c(eo_by_year$year, ai_by_year$year)))
+trend_wide <- tibble(year = all_years) %>%
+  left_join(select(eo_by_year, year, eo = count), by = "year") %>%
+  left_join(select(ai_by_year, year, ai = count), by = "year") %>%
+  mutate(across(c(eo, ai), ~ replace_na(., 0L)))
+
+trend_long <- trend_wide %>%
+  pivot_longer(c(eo, ai), names_to = "series", values_to = "count") %>%
+  mutate(type = recode(series, eo = "Executive orders", ai = "AI legislations")) %>%
+  select(year, type, count) %>%
+  arrange(year, type)
+
+# 4) Direction statements via simple linear trend on filled series
+slope_dir <- function(x_year, y_count) {
+  if (length(unique(x_year)) < 2) return("remained the same")
+  s <- coef(lm(y_count ~ x_year))[2]
+  if (is.na(s) || abs(s) < 1e-9) "remained the same" else if (s > 0) "increased" else "decreased"
+}
+eo_dir <- slope_dir(trend_wide$year, trend_wide$eo)
+ai_dir <- slope_dir(trend_wide$year, trend_wide$ai)
+
+insights_q10 <- tibble(
+  statement = c(
+    glue("On average, the number of executive orders around digital transformation in government have {eo_dir} over the years."),
+    glue("On average, the number of AI legislations around digital transformation in government have {ai_dir} over the years.")
+  )
+)
+
+# 5) Save + print
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(trend_long,   here("output", "trend_data_q10.csv"))
+write_csv(insights_q10, here("output", "insights_q10.csv"))
+
+trend_long
+insights_q10
+```
+
 ### Q11
-
--   Do **early adopters** (states with policies from 2010–2015) differ from **late adopters** in 2020–2025?
-
-### Q12
 
 -   Do certain AI legislation topics **cluster in certain regions**? Do certain executive topics topics cluster in certain regions?
 
-### Other ideas
+For executive orders, I used the `executive_order_last_topic_tag_s` variable, and for AI legislation, I used the `bill_topic_tag_s_text` variable. Multi-topic strings were split on commas and semicolons, trimmed, and normalized. For AI legislation, I removed the generic tag “artificial intelligence” since the dataset itself is scoped to AI-related laws, and including it would artificially inflate its frequency. I then counted topic mentions by region and reported the top five most common executive order topics and top five AI legislation topics for each region , with word size proportional to topic frequency. The results are reported as paired statements by region.
 
--   Other ideas: Heatmaps of activity types by state, regional comparisons (Northeast vs. South vs. West), and timelines of adoption by year (EOs, bills, rules).
+```{r}
+#| label: research-question-11
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(tidyr); library(stringr); library(glue)
+library(purrr)
+library(wordcloud); library(RColorBrewer)
+
+# 1) Load
+policy_data_clean <- read_rds(here("output", "policy_data_clean.rds"))
+
+# 2) Helper: safe filename
+slug <- function(x) {
+  x |> tolower() |> str_replace_all("[^a-z0-9]+", "_") |> str_replace_all("^_|_$", "")
+}
+
+# 3) Executive order topics by region (split inline; no map/list-cols)
+eo_topics_by_region <- policy_data_clean %>%
+  filter(!is.na(region), !is.na(executive_order_last_topic_tag_s)) %>%
+  transmute(region,
+            topic = executive_order_last_topic_tag_s) %>%
+  separate_rows(topic, sep = "[,;]") %>%
+  mutate(topic = str_squish(str_to_title(topic))) %>%
+  filter(topic != "") %>%
+  count(region, topic, sort = TRUE)
+
+# 4) AI legislation topics by region (exclude "Artificial Intelligence")
+ai_topics_by_region <- policy_data_clean %>%
+  filter(!is.na(region), !is.na(bill_topic_tag_s_text)) %>%
+  transmute(region,
+            topic = bill_topic_tag_s_text) %>%
+  separate_rows(topic, sep = "[,;]") %>%
+  mutate(topic = str_squish(str_to_title(topic))) %>%
+  filter(topic != "", topic != "Artificial Intelligence") %>%
+  count(region, topic, sort = TRUE)
+
+# 5) Top 5 per region (EO & AI)
+eo_top5 <- eo_topics_by_region %>%
+  group_by(region) %>%
+  slice_max(n, n = 5, with_ties = FALSE) %>%
+  summarise(eo_top5 = paste(topic, collapse = ", "), .groups = "drop")
+
+ai_top5 <- ai_topics_by_region %>%
+  group_by(region) %>%
+  slice_max(n, n = 5, with_ties = FALSE) %>%
+  summarise(ai_top5 = paste(topic, collapse = ", "), .groups = "drop")
+
+region_topics_q11 <- eo_top5 %>%
+  full_join(ai_top5, by = "region") %>%
+  arrange(region)
+
+# 6) Statements (one per region, exactly as requested)
+insights_q11 <- region_topics_q11 %>%
+  mutate(statement = glue(
+    "The top five most common executive order topics in the {region} are {eo_top5}, ",
+    "while {ai_top5} are the top five most common."
+  )) %>%
+  select(region, statement)
+
+# 7) Save tables
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(eo_topics_by_region, here("output", "eo_topics_by_region_q11.csv"))
+write_csv(ai_topics_by_region, here("output", "ai_topics_by_region_q11.csv"))
+write_csv(region_topics_q11,   here("output", "region_topics_q11.csv"))
+write_csv(insights_q11,        here("output", "insights_q11.csv"))
+
+# 8) Regional word clouds (EO and AI); deterministic with set.seed
+set.seed(123)
+unique_regions <- sort(unique(c(eo_topics_by_region$region, ai_topics_by_region$region)))
+
+walk(unique_regions, function(reg) {
+  # EO word cloud for region (if data exists)
+  eo_reg <- eo_topics_by_region %>% filter(region == reg)
+  if (nrow(eo_reg) > 0) {
+    png(filename = here("output", paste0("wordcloud_eo_", slug(reg), "_q11.png")),
+        width = 1400, height = 1000, res = 150, bg = "white")
+    suppressWarnings(
+      wordcloud(words = eo_reg$topic,
+                freq  = eo_reg$n,
+                min.freq = 1,
+                max.words = 200,
+                random.order = FALSE,
+                rot.per = 0.10,
+                scale = c(4, 0.8),
+                colors = brewer.pal(8, "Dark2"))
+    )
+    dev.off()
+  }
+
+  # AI word cloud for region (if data exists)
+  ai_reg <- ai_topics_by_region %>% filter(region == reg)
+  if (nrow(ai_reg) > 0) {
+    png(filename = here("output", paste0("wordcloud_ai_", slug(reg), "_q11.png")),
+        width = 1400, height = 1000, res = 150, bg = "white")
+    suppressWarnings(
+      wordcloud(words = ai_reg$topic,
+                freq  = ai_reg$n,
+                min.freq = 1,
+                max.words = 200,
+                random.order = FALSE,
+                rot.per = 0.10,
+                scale = c(4, 0.8),
+                colors = brewer.pal(8, "Dark2"))
+    )
+    dev.off()
+  }
+})
+
+# 9) Print in document
+region_topics_q11
+insights_q11
+```
+
+### Q12
+
+-   How do states that first adopted **(early adopters)** digital government executive order policies between **2013–2015** differ from those **(late adopters)** that first adopted them between **2023–2025** in terms of:
+
+    -   Policy topics (executive order topic tags)
+
+    -   Regional distribution (region 1–5 categories)
+
+I compared early adopters of digital government executive orders (2013–2015) to late adopters (2023–2025). First, I grouped states into early or late cohorts using the `executive_order_year_enacted` field. Multi-topic strings in `executive_order_last_topic_tag_s` were split on commas/semicolons, trimmed, and standardized to title case. I summarized the top five topics for each group and visualized them with word clouds. Regional distributions were assessed by counting the number of executive orders per region for early vs. late adopters. Given the limited sample sizes and topic sparsity, I focused on descriptive comparisons only rather than formal statistical testing.
+
+```{r}
+#| label: research-question-12
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(tidyr); library(stringr); library(glue)
+library(wordcloud); library(RColorBrewer)
+
+# 1) Load data
+policy_data_clean <- read_rds(here("output", "policy_data_clean.rds"))
+
+# 2) Subset executive orders with years
+eo <- policy_data_clean %>%
+  filter(!is.na(executive_order_year_enacted),
+         !is.na(executive_order_last_topic_tag_s),
+         executive_order_year_enacted >= 2013,
+         executive_order_year_enacted <= 2025) %>%
+  select(state_territory, region, executive_order_year_enacted,
+         executive_order_last_topic_tag_s)
+
+# 3) Group into early vs late adopters
+eo <- eo %>%
+  mutate(period = case_when(
+    between(executive_order_year_enacted, 2013, 2015) ~ "Early (2013–2015)",
+    between(executive_order_year_enacted, 2023, 2025) ~ "Late (2023–2025)",
+    TRUE ~ NA_character_
+  )) %>%
+  filter(!is.na(period))
+
+# 4) Split topics
+eo_topics <- eo %>%
+  separate_rows(executive_order_last_topic_tag_s, sep = "[,;]") %>%
+  mutate(topic = str_squish(str_to_title(executive_order_last_topic_tag_s))) %>%
+  filter(topic != "")
+
+# 5) Frequency tables
+topic_counts <- eo_topics %>%
+  count(period, topic, sort = TRUE)
+
+top5_early <- topic_counts %>%
+  filter(period == "Early (2013–2015)") %>%
+  slice_max(n, n = 5, with_ties = FALSE)
+
+top5_late <- topic_counts %>%
+  filter(period == "Late (2023–2025)") %>%
+  slice_max(n, n = 5, with_ties = FALSE)
+
+# 6) Regional distribution (counts per region)
+region_counts_q12 <- eo %>%
+  count(period, region, name = "count")
+
+# 7) Statements (purely descriptive)
+insights_q12 <- tibble(
+  statement = c(
+    glue("The top five most common executive order topics among early adopters (2013–2015) were {paste(top5_early$topic, collapse = ', ')}, while late adopters (2023–2025) focused more on {paste(top5_late$topic, collapse = ', ')}."),
+    glue("Regionally, early adopters were concentrated in: {paste(unique(region_counts_q12$region[region_counts_q12$period == 'Early (2013–2015)']), collapse = ', ')}; late adopters in: {paste(unique(region_counts_q12$region[region_counts_q12$period == 'Late (2023–2025)']), collapse = ', ')}.")
+  )
+)
+
+# 8) Save outputs
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(topic_counts,      here("output", "eo_topic_counts_q12.csv"))
+write_csv(region_counts_q12, here("output", "region_counts_q12.csv"))
+write_csv(insights_q12,      here("output", "insights_q12.csv"))
+
+# 9) Word clouds (early vs late)
+set.seed(123)
+for (grp in unique(eo_topics$period)) {
+  dat <- eo_topics %>% filter(period == grp) %>% count(topic)
+  if (nrow(dat) > 0) {
+    png(filename = here("output", paste0("wordcloud_", str_replace_all(grp, "[^A-Za-z0-9]", "_"), "_q12.png")),
+        width = 1400, height = 1000, res = 150, bg = "white")
+    wordcloud(words = dat$topic,
+              freq = dat$n,
+              min.freq = 1,
+              max.words = 200,
+              random.order = FALSE,
+              rot.per = 0.10,
+              scale = c(4, 0.8),
+              colors = brewer.pal(8, "Dark2"))
+    dev.off()
+  }
+}
+
+# 10) Print
+top5_early
+top5_late
+region_counts_q12
+insights_q12
+```
+
+### Q13
+
+-   How do states that first adopted **(early adopters)** AI legislation between **2019–2021** differ from those **(late adopters)** that first adopted it between **2023–2025** in terms of:
+
+    -   Policy topics (bill topic tags, excluding the baseline “artificial intelligence” tag)
+
+    -   Regional distribution (region 1–5 categories)
+
+I compared early adopters of AI legislation (2019–2021) to late adopters (2023–2025). I grouped states by adoption period using the `legislative_session` field. Policy topics (`bill_topic_tag_s_text`) were split on commas/semicolons, cleaned, and standardized to title case. Because all bills in this dataset are inherently AI-related, I excluded the generic tag *“Artificial Intelligence”* to avoid inflating its frequency and to highlight the other substantive policy areas addressed in AI legislation (e.g., data governance, privacy, workforce). I then summarized the top five topics for each group, created word clouds for visualization, and compared regional distributions by counting the number of adopting states in each CDC region.
+
+```{r}
+#| label: research-question-13
+#| message: false
+#| warning: false
+
+library(readr); library(here)
+library(dplyr); library(tidyr); library(stringr); library(glue)
+library(wordcloud); library(RColorBrewer)
+
+# 1) Load data
+policy_data_clean <- read_rds(here("output", "policy_data_clean.rds"))
+
+# 2) Subset AI legislations with years
+ai <- policy_data_clean %>%
+  filter(!is.na(legislative_session),
+         !is.na(bill_topic_tag_s_text),
+         legislative_session >= 2019,
+         legislative_session <= 2025) %>%
+  select(state_territory, region, legislative_session,
+         bill_topic_tag_s_text)
+
+# 3) Group into early vs late adopters
+ai <- ai %>%
+  mutate(period = case_when(
+    between(legislative_session, 2019, 2021) ~ "Early (2019–2021)",
+    between(legislative_session, 2023, 2025) ~ "Late (2023–2025)",
+    TRUE ~ NA_character_
+  )) %>%
+  filter(!is.na(period))
+
+# 4) Split topics, clean, and exclude "Artificial Intelligence"
+ai_topics <- ai %>%
+  separate_rows(bill_topic_tag_s_text, sep = "[,;]") %>%
+  mutate(topic = str_squish(str_to_title(bill_topic_tag_s_text))) %>%
+  filter(topic != "", topic != "Artificial Intelligence")
+
+# 5) Frequency tables
+topic_counts <- ai_topics %>%
+  count(period, topic, sort = TRUE)
+
+top5_early <- topic_counts %>%
+  filter(period == "Early (2019–2021)") %>%
+  slice_max(n, n = 5, with_ties = FALSE)
+
+top5_late <- topic_counts %>%
+  filter(period == "Late (2023–2025)") %>%
+  slice_max(n, n = 5, with_ties = FALSE)
+
+# 6) Regional distribution (counts per region)
+region_counts_q13 <- ai %>%
+  count(period, region, name = "count")
+
+# 7) Statements
+insights_q13 <- tibble(
+  statement = c(
+    glue("Early adopters of AI legislation (2019–2021) were concentrated in regions {paste(unique(region_counts_q13$region[region_counts_q13$period == 'Early (2019–2021)']), collapse = ', ')}, while late adopters (2023–2025) were more evenly spread across regions {paste(unique(region_counts_q13$region[region_counts_q13$period == 'Late (2023–2025)']), collapse = ', ')}."),
+    glue("The top AI legislation topics for early adopters were {paste(top5_early$topic, collapse = ', ')}, while late adopters more commonly emphasized {paste(top5_late$topic, collapse = ', ')}.")
+  )
+)
+
+# 8) Save outputs
+if (!dir.exists(here("output"))) dir.create(here("output"), recursive = TRUE)
+write_csv(topic_counts,      here("output", "ai_topic_counts_q13.csv"))
+write_csv(region_counts_q13, here("output", "region_counts_q13.csv"))
+write_csv(insights_q13,      here("output", "insights_q13.csv"))
+
+# 9) Word clouds (early vs late)
+set.seed(123)
+for (grp in unique(ai_topics$period)) {
+  dat <- ai_topics %>% filter(period == grp) %>% count(topic)
+  if (nrow(dat) > 0) {
+    png(filename = here("output", paste0("wordcloud_", str_replace_all(grp, "[^A-Za-z0-9]", "_"), "_q13.png")),
+        width = 1400, height = 1000, res = 150, bg = "white")
+    wordcloud(words = dat$topic,
+              freq = dat$n,
+              min.freq = 1,
+              max.words = 200,
+              random.order = FALSE,
+              rot.per = 0.10,
+              scale = c(4, 0.8),
+              colors = brewer.pal(8, "Dark2"))
+    dev.off()
+  }
+}
+
+# 10) Print
+top5_early
+top5_late
+region_counts_q13
+insights_q13
+```
+
+## Export all insights
+
+I'm almost done! I now merge all insights/statements into one document to use for our reporting.
+
+```{r}
+#| label: collect-all-insights
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(here)
+library(fs)
+
+# 1) Files to include (ordered) — keep Q4 split files; exclude insights_q4.csv
+insight_files <- c(
+  "insights.csv",                # Q1
+  "insights_q2.csv",
+  "insights_q3.csv",
+  "insights_cdo_q4.csv",         # Q4 (part 1)
+  "insights_dst_q4.csv",         # Q4 (part 2)
+  "insights_q5.csv",
+  "insights_q6.csv",
+  "insights_q7.csv",
+  "insights_q8.csv",
+  "insights_q9.csv",
+  "insights_q10.csv",
+  "insights_q11.csv",
+  "insights_q12.csv",
+  "insights_q13.csv"
+)
+
+# 2) Map filenames -> question numbers
+q_map <- c(
+  "insights.csv"       = "Q1",
+  "insights_q2.csv"    = "Q2",
+  "insights_q3.csv"    = "Q3",
+  "insights_cdo_q4.csv"= "Q4",
+  "insights_dst_q4.csv"= "Q4",
+  "insights_q5.csv"    = "Q5",
+  "insights_q6.csv"    = "Q6",
+  "insights_q7.csv"    = "Q7",
+  "insights_q8.csv"    = "Q8",
+  "insights_q9.csv"    = "Q9",
+  "insights_q10.csv"   = "Q10",
+  "insights_q11.csv"   = "Q11",
+  "insights_q12.csv"   = "Q12",
+  "insights_q13.csv"   = "Q13"
+)
+
+# 3) Map question numbers -> full research question text
+q_text_map <- c(
+  Q1  = "How many states/territories have at least one: Executive order, AI Legislation, Chief Data Officer (CDO), Digital Service Team (DST), Digital Service Impact Report, Design system",
+  Q2  = "Which regions have the most vs least: Executive order, AI Legislations, Chief Data Officers (CDO), Digital Service Teams (DST), Digital Service Impact Reports, Design systems",
+  Q3  = "Which states are the most active vs. least active across all categories?",
+  Q4  = "Which states introduced CDOs or DSTs earliest, and how has that spread across regions?",
+  Q5  = "Which states with active CDOs also have design systems or DSTs?",
+  Q6  = "Are states with AI legislation more likely to have other forms of digital infrastructure (DST, design systems)?",
+  Q7  = "In which region(s) do AI legislation policies cluster in?",
+  Q8  = "What are the most common policy topics in executive orders (e.g., broadband, interoperability, AI)?",
+  Q9  = "What are the most common policy topics in AI legislations orders (e.g., broadband, interoperability, AI)?",
+  Q10 = "What is the trend over time in the number of executive orders and AI legislations enacted?",
+  Q11 = "Do certain AI legislation topics cluster in certain regions? Do certain executive topics topics cluster in certain regions?",
+  Q12 = "How do states that first adopted (early adopters) digital government executive order policies between 2013–2015 differ from those (late adopters) that first adopted them between 2023–2025 in terms of: Policy topics (executive order topic tags) and Regional distribution (region 1–5 categories)",
+  Q13 = "How do states that first adopted (early adopters) AI legislation between 2019–2021 differ from those (late adopters) that first adopted it between 2023–2025 in terms of: Policy topics (bill topic tags, excluding the baseline 'artificial intelligence' tag) and Regional distribution (region 1–5 categories)"
+)
+
+# 4) Keep only files that actually exist in output/
+insight_files <- keep(insight_files, ~ file_exists(here("output", .x)))
+
+# 5) Reader with special handling for Q3 ("type" + "statement")
+safe_read <- function(fname) {
+  path <- here("output", fname)
+  df <- readr::read_csv(path, show_col_types = FALSE)
+
+  if ("statement" %in% names(df)) {
+    if ("type" %in% names(df)) {
+      df <- df %>%
+        mutate(statement = paste0(type, ": ", statement)) %>%
+        select(statement)
+    } else {
+      df <- df %>% select(statement)
+    }
+  } else {
+    return(tibble())
+  }
+
+  qnum <- q_map[[fname]]
+  df %>%
+    mutate(
+      source_file = fname,
+      question_number = qnum,
+      question_text = q_text_map[[qnum]]
+    ) %>%
+    select(question_number, question_text, source_file, statement)
+}
+
+# 6) Bind, keep input order
+all_insights_statements <- map_dfr(insight_files, safe_read) %>%
+  mutate(
+    question_number = factor(
+      question_number,
+      levels = unique(q_map[insight_files])  # preserve order
+    )
+  ) %>%
+  arrange(question_number)
+
+# 7) Save
+readr::write_csv(all_insights_statements, here("output", "all_insights_statements.csv"))
+```

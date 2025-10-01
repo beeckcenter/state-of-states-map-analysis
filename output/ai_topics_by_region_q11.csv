@@ -1,0 +1,40 @@
+region,topic,n
+South,Education,7
+South,Public Health,5
+South,Criminal/Legal System,4
+West,Criminal/Legal System,4
+West,Public Safety,4
+Northeast,Civil Rights,3
+South,Civil Rights,3
+Midwest,Public Health,2
+Midwest,Voting/Elections,2
+Northeast,Data Privacy,2
+Northeast,Education,2
+South,Public Safety,2
+West,Civil Rights,2
+Midwest,Agriculture,1
+Midwest,Criminal/Legal System,1
+Midwest,Education,1
+Midwest,Emergency Management,1
+Midwest,Labor/Workforce,1
+Midwest,Public Safety,1
+Northeast,Administrative Reorganization,1
+Northeast,Criminal/Legal System,1
+Northeast,Data Governance,1
+Northeast,Digital Service Team,1
+Northeast,Public Safety,1
+South,Blockchain,1
+South,Cybersecurity,1
+South,Data Governance,1
+South,Data Sharing,1
+South,Infrastructure,1
+South,Transportation/Mobility,1
+South,Voting/Elections,1
+South,Water/Energy,1
+South,Website/Portal,1
+Territories,Criminal/Legal System,1
+West,Blockchain,1
+West,Emergency Management,1
+West,Facial Recognition,1
+West,Labor/Workforce,1
+West,Public Health,1
